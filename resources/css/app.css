@@ -36,7 +36,8 @@ html {
 
 body {
 
-   background-color: var(--primary);
+    background-color: var(--primary) !important;
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;

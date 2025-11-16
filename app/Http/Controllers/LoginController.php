@@ -37,7 +37,7 @@ class LoginController extends Controller
 
 
 
-            return redirect()->route('dashboard');
+            return redirect()->route('dashboard')->with('success', 'Successfully logged in.');
         }
 
         return back()->withErrors([

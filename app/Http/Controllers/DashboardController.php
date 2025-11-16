@@ -25,9 +25,26 @@ class DashboardController extends Controller
         // Get health records if student exists
         $healthRecords = $student ? $student->healthRecords()->latest()->get() : collect();
         $goals = $student ? $student->goals()->latest()->get() : collect();
-        $tips = Tip::latest()->take(5)->get();
+        // Latest tips (with author) for inline dashboard display
+        $tips = Tip::with('user')->latest()->take(5)->get();
 
-        return view('dashboard', compact('user', 'student', 'healthRecords', 'goals', 'tips'));
+        // Aggregate stats for profile section
+        $tipsAuthoredCount = Tip::where('created_by', $user->id)->count();
+        $goalsCount = $goals->count();
+        $completedGoalsCount = $goals->where('is_completed', true)->count();
+        $latestHealth = $healthRecords->first();
+
+        return view('dashboard', compact(
+            'user',
+            'student',
+            'healthRecords',
+            'goals',
+            'tips',
+            'tipsAuthoredCount',
+            'goalsCount',
+            'completedGoalsCount',
+            'latestHealth'
+        ));
     }
 
     /**

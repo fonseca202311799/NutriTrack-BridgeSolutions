@@ -87,9 +87,15 @@
             </div>
         </div>
         @if (session('success'))
-            <div class="alert" style="background:#e8f5e9;color:#1b5e20;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
+            <div id="toast-success" style="position:fixed; top:20px; right:20px; z-index:9999; background:#2e7d32; color:#fff; padding:12px 16px; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.15);">
                 {{ session('success') }}
             </div>
+            <script>
+                setTimeout(function(){
+                    var t = document.getElementById('toast-success');
+                    if (t) { t.style.transition = 'opacity .4s'; t.style.opacity = '0'; setTimeout(function(){ if(t && t.parentNode) t.parentNode.removeChild(t); }, 400); }
+                }, 2500);
+            </script>
         @endif
         @if (session('error'))
             <div class="alert" style="background:#fdecea;color:#b71c1c;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
@@ -157,7 +163,6 @@
                 </p>
                 <div style="display:flex;gap:10px;flex-wrap:wrap;">
                     <button class="btn-card" type="button" onclick="openModal('addIntakeModal')">Add Intake</button>
-                    <a class="btn-card" href="{{ route('health-records.index') }}">View Records</a>
                 </div>
             </div>
         </div>
@@ -205,12 +210,53 @@
             </div>
         </div>
 
-        <!-- Tips Section -->
+        <!-- Tips Section (single parent card with description + diagram + list) -->
         <div id="section-tips" class="dashboard-container" style="display:none;">
-            <div class="card">
-                <h2>Tips</h2>
-                <p class="text">Browse nutrition and wellness tips curated for students.</p>
-                <a class="btn-card" href="{{ route('tips.index') }}">View Tips</a>
+            <div class="card" style="text-align:left;">
+                <div style="margin-bottom:16px;">
+                    <p class="text" style="margin:0 0 8px 0;font-size:15px;font-weight:500;">Nutrition and wellness tips curated for students.</p>
+                    <h2 style="margin:0 0 12px 0;">Tips</h2>
+                    @if(auth()->user()->role === 'admin')
+                        <a class="btn-card" href="{{ route('tips.create') }}">Add Tip</a>
+                    @endif
+                </div>
+
+                <div style="display:grid;gap:16px;">
+                    @forelse($tips as $tip)
+                        <div style="border:1px solid #f1f1f1;padding:12px 14px;border-radius:10px;display:flex;flex-direction:column;gap:6px;">
+                            <div style="display:flex;justify-content:space-between;align-items:start;gap:12px;">
+                                <div>
+                                    <h3 style="margin:0 0 4px 0;font-size:16px;">{{ $tip->title }}</h3>
+                                    <p class="text" style="margin:0;color:#666;font-size:12px;">
+                                        @if($tip->category)
+                                            <span class="badge" style="background:#eee;color:#333;padding:4px 8px;border-radius:6px;margin-right:8px;">{{ $tip->category }}</span>
+                                        @endif
+                                        <small>by {{ optional($tip->user)->name ?? 'Unknown' }}</small>
+                                    </p>
+                                </div>
+                                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                                    <button type="button" class="btn-card" style="padding:6px 10px;" onclick="openModal('tipModal-{{ $tip->id }}')">View</button>
+                                    @if(auth()->user()->role === 'admin')
+                                        <a class="btn-card" href="{{ route('tips.edit', $tip) }}" style="padding:6px 10px;">Edit</a>
+                                        <form method="POST" action="{{ route('tips.destroy', $tip) }}" onsubmit="return confirm('Delete this tip?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-card" style="background:#b71c1c;padding:6px 10px;">Delete</button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </div>
+                            <p class="text" style="margin:0; white-space:pre-line;font-size:13px;">{{ \Illuminate\Support\Str::limit($tip->content, 300) }}</p>
+                        </div>
+                    @empty
+                        <div style="border:1px solid #f1f1f1;padding:12px 14px;border-radius:10px;">
+                            <p class="text" style="margin:0;">No tips available yet.</p>
+                            @if(auth()->user()->role === 'admin')
+                                <a class="btn-card" style="margin-top:10px;" href="{{ route('tips.create') }}">Create Tip</a>
+                            @endif
+                        </div>
+                    @endforelse
+                </div>
             </div>
         </div>
 
@@ -225,10 +271,65 @@
         <!-- Profile Section -->
         <div id="section-profile" class="dashboard-container" style="display:none;">
             <div class="card">
-                <h2>Profile</h2>
-                <p class="text">Name: <strong>{{ auth()->user()->name }}</strong></p>
-                <p class="text">Email: <strong>{{ auth()->user()->email }}</strong></p>
-                <a class="btn-card" href="{{ route('students.index') }}">Manage Profile</a>
+                <h2 style="margin-top:0;">Profile</h2>
+                @if($student)
+                <form method="POST" action="{{ route('students.update', $student) }}" style="display:flex;flex-direction:column;gap:10px;text-align:left;">
+                    @csrf
+                    @method('PUT')
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Name:</span>
+                        <span style="font-weight:600;">{{ auth()->user()->name }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Email:</span>
+                        <span style="font-weight:600;word-break:break-word;">{{ auth()->user()->email }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Role:</span>
+                        <span style="font-weight:600;text-transform:capitalize;">{{ auth()->user()->role ?? '—' }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Student ID:</span>
+                        <span style="font-weight:600;">{{ $student->student_id }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <label for="age" style="color:#666;font-size:12px;min-width:110px;margin:0;">Age:</label>
+                        <input id="age" name="age" type="number" min="1" class="form-control" value="{{ old('age', $student->age) }}" style="max-width:160px;" />
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <label for="sex" style="color:#666;font-size:12px;min-width:110px;margin:0;">Sex:</label>
+                        <input id="sex" name="sex" type="text" class="form-control" value="{{ old('sex', $student->sex) }}" placeholder="e.g., Male / Female" style="max-width:200px;" />
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <label for="grade_level" style="color:#666;font-size:12px;min-width:110px;margin:0;">Grade Level:</label>
+                        <input id="grade_level" name="grade_level" type="text" class="form-control" value="{{ old('grade_level', $student->grade_level) }}" placeholder="e.g., Grade 10" style="max-width:220px;" />
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Tips Authored:</span>
+                        <span style="font-weight:600;">{{ $tipsAuthoredCount ?? 0 }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Goals (C/T):</span>
+                        <span style="font-weight:600;">{{ $completedGoalsCount ?? 0 }} / {{ $goalsCount ?? 0 }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Latest BMI:</span>
+                        <span style="font-weight:600;">{{ optional($latestHealth)->bmi ?? '—' }}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid #eee;border-radius:8px;background:#fafafa;">
+                        <span style="color:#666;font-size:12px;min-width:110px;">Latest Calories:</span>
+                        <span style="font-weight:600;">{{ optional($latestHealth)->calories ?? '—' }}</span>
+                    </div>
+                    <div style="margin-top:8px;display:flex;gap:10px;justify-content:flex-end;">
+                        <button type="submit" class="btn-card">Save Changes</button>
+                    </div>
+                </form>
+                @else
+                    <div class="alert" style="background:#fff3cd;color:#8a6d3b;border:1px solid #ffeeba;padding:10px 12px;border-radius:8px;">No student profile found yet.</div>
+                    <div style="margin-top:12px;display:flex;gap:10px;">
+                        <a class="btn-card" href="{{ route('students.index') }}">Manage Profile</a>
+                    </div>
+                @endif
             </div>
         </div>
     </div>
@@ -367,6 +468,7 @@
                 </div>
             </div>
         </div>
+
     </div>
 
     <!-- Logout Confirmation Modal -->
@@ -381,6 +483,36 @@
             </div>
         </div>
     </div>
+
+    <!-- Tip Detail Modals (moved outside manageGoalsModal for proper overlay) -->
+    @if(isset($tips))
+        @foreach($tips as $tip)
+            <div id="tipModal-{{ $tip->id }}" class="modal" style="display:none;">
+                <div class="modal-content" style="max-width:700px;width:90%;text-align:left;">
+                    <span class="close" onclick="closeModal('tipModal-{{ $tip->id }}')">&times;</span>
+                    <h2 style="margin:0 0 6px 0;">{{ $tip->title }}</h2>
+                    <p style="margin:0 0 12px 0;color:#555;font-size:13px;">
+                        @if($tip->category)
+                            <span style="background:#eee;color:#333;padding:4px 8px;border-radius:6px;margin-right:8px;font-size:11px;">{{ $tip->category }}</span>
+                        @endif
+                        <small>by {{ optional($tip->user)->name ?? 'Unknown' }} • {{ $tip->created_at->format('M d, Y') }}</small>
+                    </p>
+                    <div style="font-size:14px; line-height:1.6; white-space:pre-line; margin-bottom:16px;">{{ $tip->content }}</div>
+                    <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+                        @if(auth()->user()->role === 'admin')
+                            <a class="btn-card" href="{{ route('tips.edit', $tip) }}" style="padding:6px 12px;">Edit</a>
+                            <form method="POST" action="{{ route('tips.destroy', $tip) }}" onsubmit="return confirm('Delete this tip?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn-card" style="background:#b71c1c;padding:6px 12px;">Delete</button>
+                            </form>
+                        @endif
+                        <button type="button" class="btn-card" style="background:#6c757d;padding:6px 12px;" onclick="closeModal('tipModal-{{ $tip->id }}')">Close</button>
+                    </div>
+                </div>
+            </div>
+        @endforeach
+    @endif
 
 
 
