@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\RedirectResponse;
+use App\Models\students;
 
 class LoginController extends Controller
 {
@@ -18,6 +19,17 @@ class LoginController extends Controller
             $request->session()->regenerate();
 
             $user = Auth::user();
+
+            // Ensure a linked student profile exists for non-admins
+            if (!$user->role || $user->role === 'student' || $user->role === 'teacher') {
+                $existing = students::where('user_id', $user->id)->first();
+                if (!$existing) {
+                    students::create([
+                        'user_id' => $user->id,
+                        'student_id' => 'STU-' . $user->id,
+                    ]);
+                }
+            }
 
             if ($user->role === 'admin') {
                 return redirect('/admin');

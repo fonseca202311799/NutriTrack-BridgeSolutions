@@ -80,6 +80,12 @@
     </aside>
 
     <div class="main" style="margin-left: 306px; padding: 20px;">
+        <div id="welcome-banner" class="card" style="text-align:left; display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;">
+            <div>
+                <h2 style="margin:0;">Welcome back, {{ auth()->user()->name }}!</h2>
+                <p class="text" style="margin:6px 0 0 0;">Here’s your health summary for today.</p>
+            </div>
+        </div>
         @if (session('success'))
             <div class="alert" style="background:#e8f5e9;color:#1b5e20;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
                 {{ session('success') }}
@@ -130,29 +136,11 @@
                 </p>
             </div>
 
-            <!-- Health Goals -->
+            <!-- Health Goals (button opens modal) -->
             <div class="card">
                 <h2>Health Goals</h2>
-                @if($goals->isEmpty())
-                    <p class="text">No goals yet. Set your first goal!</p>
-                @else
-                    <ul style="list-style:none; padding:0; margin:0; text-align:left;">
-                        @foreach($goals as $goal)
-                            <li style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f1f1;">
-                                <span>
-                                    <strong>{{ ucfirst($goal->goal_type) }}</strong>
-                                    <small style="color:#666"> — target: {{ $goal->target }}</small>
-                                </span>
-                                @if($goal->is_completed)
-                                    <span class="badge" style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px;">Completed</span>
-                                @else
-                                    <span class="badge" style="background:#eee; color:#333; padding:4px 8px; border-radius:6px;">In progress</span>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-                <a class="btn-card" href="{{ route('goals.index') }}" style="margin-top:12px;">Manage Goals</a>
+                <p class="text">View and update your health goals.</p>
+                <button class="btn-card" type="button" onclick="openModal('manageGoalsModal')">Open Health Goals</button>
             </div>
         </div>
 
@@ -197,7 +185,23 @@
                         @endforeach
                     </ul>
                 @endif
-                <a class="btn-card" href="{{ route('goals.index') }}" style="margin-top:12px;">Manage Goals</a>
+
+                <form method="POST" action="{{ route('goals.store') }}" style="margin-top:12px;">
+                    @csrf
+                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;align-items:end;">
+                        <div>
+                            <label class="form-label">Goal Type</label>
+                            <input type="text" name="goal_type" class="form-control" placeholder="e.g., weight, calories" required />
+                        </div>
+                        <div>
+                            <label class="form-label">Target</label>
+                            <input type="text" name="target" class="form-control" placeholder="e.g., 70kg or 2000 kcal" required />
+                        </div>
+                        <div>
+                            <button type="submit" class="btn-card" style="width:100%">Add Goal</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
 
@@ -292,6 +296,79 @@
         </div>
     </div>
 
+    <!-- Manage Goals Modal -->
+    <div id="manageGoalsModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:840px;width:90%;">
+            <span class="close" onclick="closeModal('manageGoalsModal')">&times;</span>
+            <h2 style="margin-top:0;">Health Goals</h2>
+
+            <div style="display:grid;grid-template-columns:1fr;gap:16px;">
+                <!-- Goals List with actions -->
+                <div class="card" style="margin:0;">
+                    <h3 style="margin-top:0;">Your Goals</h3>
+                    @if($goals->isEmpty())
+                        <p class="text">No goals yet. Create one below.</p>
+                    @else
+                        <ul style="list-style:none;padding:0;margin:0;">
+                            @foreach($goals as $goal)
+                                <li style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f1f1;">
+                                    <div>
+                                        <strong>{{ ucfirst($goal->goal_type) }}</strong>
+                                        <small style="color:#666"> — target: {{ $goal->target }}</small>
+                                        @if($goal->is_completed)
+                                            <span class="badge" style="background:#4caf50;color:#fff;padding:4px 8px;border-radius:6px;margin-left:8px;">Completed</span>
+                                        @else
+                                            <span class="badge" style="background:#eee;color:#333;padding:4px 8px;border-radius:6px;margin-left:8px;">In progress</span>
+                                        @endif
+                                    </div>
+                                    <div style="display:flex;gap:8px;align-items:center;">
+                                        @if(!$goal->is_completed)
+                                            <form method="POST" action="{{ route('goals.update', $goal) }}">
+                                                @csrf
+                                                @method('PUT')
+                                                <input type="hidden" name="goal_type" value="{{ $goal->goal_type }}" />
+                                                <input type="hidden" name="target" value="{{ $goal->target }}" />
+                                                <input type="hidden" name="is_completed" value="1" />
+                                                <button type="submit" class="btn-card" title="Mark as complete">Mark Complete</button>
+                                            </form>
+                                        @endif
+                                        <form method="POST" action="{{ route('goals.destroy', $goal) }}" onsubmit="return confirm('Delete this goal?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn-card" style="background:#b71c1c;">Delete</button>
+                                        </form>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+
+                <!-- Create Goal -->
+                <div class="card" style="margin:0;">
+                    <h3 style="margin-top:0;">Add New Goal</h3>
+                    <form method="POST" action="{{ route('goals.store') }}">
+                        @csrf
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                            <div>
+                                <label class="form-label">Goal Type</label>
+                                <input type="text" name="goal_type" class="form-control" placeholder="e.g., weight, calories" required />
+                            </div>
+                            <div>
+                                <label class="form-label">Target</label>
+                                <input type="text" name="target" class="form-control" placeholder="e.g., 70kg or 2000 kcal" required />
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:12px;">
+                            <button type="button" class="btn-card" style="background:#6c757d;" onclick="closeModal('manageGoalsModal')">Close</button>
+                            <button type="submit" class="btn-card">Save Goal</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Logout Confirmation Modal -->
     <div id="logoutConfirmModal" class="modal" style="display:none;">
         <div class="modal-content">
@@ -326,6 +403,8 @@
                 const el = document.getElementById('section-' + s);
                 if (el) el.style.display = (s === name) ? 'grid' : 'none';
             });
+            const wb = document.getElementById('welcome-banner');
+            if (wb) wb.style.display = (name === 'dashboard') ? 'flex' : 'none';
             document.querySelectorAll('.sidebar-nav .nav-link[data-section]').forEach(link => {
                 if (link.dataset.section === name) {
                     link.classList.add('active');

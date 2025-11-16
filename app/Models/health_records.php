@@ -29,7 +29,8 @@ class health_records extends Model
     // 🔗 Relationships
     public function student()
     {
-        return $this->belongsTo(students::class);
+        // Explicit foreign key to match migration column `student_id`
+        return $this->belongsTo(students::class, 'student_id');
     }
 
 
