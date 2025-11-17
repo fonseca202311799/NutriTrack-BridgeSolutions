@@ -86,30 +86,3 @@ const confirmLogout = () => {
 }
 </script>
 
-<<<<<<< HEAD
-<style scoped>
-.sidebar {
-  width: 250px;
-  min-height: 100vh;
-  background: linear-gradient(180deg, #007bff, #004aad);
-}
-
-.sidebar .nav-link {
-  padding: 10px 15px;
-  border-radius: 8px;
-  transition: 0.3s;
-}
-
-.sidebar .nav-link:hover,
-.sidebar .nav-link.active {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.logout-link {
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  padding-top: 10px;
-}
-</style>
-=======
-
->>>>>>> act2
