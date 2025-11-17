@@ -20,6 +20,10 @@ class goals extends Model
     // 🔗 Relationships
     public function student()
     {
+<<<<<<< HEAD
         return $this->belongsTo(students::class, 'student_id');
+=======
+        return $this->belongsTo(students::class);
+>>>>>>> act2
     }
 }

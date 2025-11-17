@@ -24,10 +24,17 @@
             <label class="form-label">Email</label>
             <input v-model="account.email" type="email" class="form-control" />
           </div>
+<<<<<<< HEAD
           <div class="mb-3">
             <label class="form-label">New Password</label>
             <input v-model="account.password" type="password" class="form-control" />
           </div>
+=======
+          <!-- <div class="mb-3">
+            <label class="form-label">New Password</label>
+            <input v-model="account.password" type="password" class="form-control" />
+          </div> -->
+>>>>>>> act2
           <button type="submit" class="btn btn-primary">Save Changes</button>
         </form>
       </div>
@@ -38,10 +45,17 @@
       <div class="mb-3">
         <h6 class="fw-bold text-primary"><i class="bi bi-sliders me-2"></i>System Preferences</h6>
 
+<<<<<<< HEAD
         <div class="form-check form-switch mb-2">
           <input v-model="darkMode" class="form-check-input" type="checkbox" id="darkModeSwitch" />
           <label class="form-check-label" for="darkModeSwitch"> Enable Dark Mode </label>
         </div>
+=======
+        <!-- <div class="form-check form-switch mb-2">
+          <input v-model="darkMode" class="form-check-input" type="checkbox" id="darkModeSwitch" />
+          <label class="form-check-label" for="darkModeSwitch"> Enable Dark Mode </label>
+        </div> -->
+>>>>>>> act2
 
         <!-- <div class="form-check form-switch">
             <input v-model="notifications" class="form-check-input" type="checkbox" id="notificationSwitch" />

@@ -29,12 +29,20 @@ class students extends Model
 
     public function healthRecords()
     {
+<<<<<<< HEAD
         // Explicit foreign key on related model table `health_records.student_id`
         return $this->hasMany(health_records::class, 'student_id');
+=======
+        return $this->hasMany(health_records::class);
+>>>>>>> act2
     }
 
     public function goals()
     {
+<<<<<<< HEAD
         return $this->hasMany(goals::class, 'student_id');
+=======
+        return $this->hasMany(goals::class);
+>>>>>>> act2
     }
 }

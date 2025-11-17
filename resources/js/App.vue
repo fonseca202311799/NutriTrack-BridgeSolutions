@@ -102,8 +102,13 @@ const logout = async () => {
 <style scoped>
 /* Sidebar */
 .sidebar {
+<<<<<<< HEAD
   width: 250px;
   background: #4caf50;
+=======
+  width: 240px;
+  background: linear-gradient(180deg, #007bff, #004aad);
+>>>>>>> act2
   color: white;
   height: 100vh;
   display: flex;
@@ -156,13 +161,22 @@ const logout = async () => {
 
 /* Main content */
 .main-content {
+<<<<<<< HEAD
   margin-left: 250px;
+=======
+  margin-right: 35px;
+  margin-left: 275px;
+>>>>>>> act2
   transition: margin-left 0.3s ease;
   width: calc(100% - 250px);
 }
 
 .main-content.collapsed {
+<<<<<<< HEAD
   margin-left: 0;
+=======
+  margin-left: 35px;
+>>>>>>> act2
   width: 100%;
 }
 </style>

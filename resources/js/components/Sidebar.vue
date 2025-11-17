@@ -86,6 +86,7 @@ const confirmLogout = () => {
 }
 </script>
 
+<<<<<<< HEAD
 <style scoped>
 .sidebar {
   width: 250px;
@@ -109,3 +110,6 @@ const confirmLogout = () => {
   padding-top: 10px;
 }
 </style>
+=======
+
+>>>>>>> act2
