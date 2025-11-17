@@ -20,12 +20,11 @@ class LoginController extends Controller
             $user = Auth::user();
 
             if ($user->role === 'admin') {
-                return redirect('/admin');
+                return redirect('/admin')->with('login_success', 'Welcome back, admin!');
             }
 
-
-
-            return redirect()->route('dashboard');
+            // Flash success toast only for students (or non-admin roles)
+            return redirect()->route('dashboard')->with('login_success', 'Successfully logged in. Welcome back!');
         }
 
         return back()->withErrors([

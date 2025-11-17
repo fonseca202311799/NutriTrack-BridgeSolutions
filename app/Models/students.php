@@ -29,11 +29,11 @@ class students extends Model
 
     public function healthRecords()
     {
-        return $this->hasMany(health_records::class);
+        return $this->hasMany(health_records::class, 'student_id');
     }
 
     public function goals()
     {
-        return $this->hasMany(goals::class);
+        return $this->hasMany(goals::class, 'student_id');
     }
 }

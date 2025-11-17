@@ -80,6 +80,9 @@ class StudentsController extends Controller
         ]);
 
         $students->update($validated);
+        if ($request->filled('redirect_to') && $request->input('redirect_to') === 'dashboard') {
+            return redirect()->route('dashboard')->with('success', 'Profile updated successfully!');
+        }
         return redirect()->route('students.index')->with('success', 'Student updated successfully!');
     }
 

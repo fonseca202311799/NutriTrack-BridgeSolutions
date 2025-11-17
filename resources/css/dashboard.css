@@ -17,14 +17,14 @@
     box-sizing: border-box;
 
 
-}html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 30px;
 }
 
 body {
     background: linear-gradient(var(--text-color), var(--primary));
     min-height: 100vh;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+    background-size: cover;
 }
 
 
@@ -32,10 +32,12 @@ body {
 .sidebar {
     width: 270px;
     position: fixed;
+    top: 0;
+    left: 0;
     background: var(--text-color);
-    margin: 18px;
+    margin: 18px 18px 18px 18px; /* symmetrical top/bottom spacing */
     border-radius: 16px;
-    height: calc(100vh - 32px);
+    height: calc(100vh - 36px); /* account for 18px top + 18px bottom margins */
     transition: .4s ease;
 }
 
@@ -226,6 +228,7 @@ body {
     gap: 20px;
     padding: 20px;
     margin-top: 50px;
+    overflow: visible; /* ensure the page scrolls, not individual cards */
 }
 
 .card {
@@ -235,6 +238,69 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: visible; /* prevent inner scrollbars */
+    max-height: none;  /* allow content to expand naturally */
+}
+
+/* Health section: left-align content for form readability */
+#section-health .card {
+    text-align: left;
+}
+
+/* Form styling */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2a7d2e;
+    font-size: 0.9rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e3e3e3;
+    border-radius: 8px;
+    background: #fff;
+    color: #333;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.form-control:focus {
+    border-color: #4caf50;
+    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.15);
+}
+
+.form-actions {
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+details.form-details summary {
+    cursor: pointer;
+    color: #2a7d2e;
+    font-weight: 600;
+}
+
+/* Ensure dashboard cards never scroll and grow with content */
+#section-dashboard .card {
+    overflow: visible !important;
+    overflow-y: visible !important;
+    height: auto !important;
+    max-height: none !important;
 }
 
 .card:hover {

@@ -11,7 +11,7 @@
     <link rel="icon" type="image/png" href="{{ asset('images/small_logo.png') }}">
 
 </head>
-<body>
+<body class="login-body">
     <main>
         {{ $slot }}
     </main>

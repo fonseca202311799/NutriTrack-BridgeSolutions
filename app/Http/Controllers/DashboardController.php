@@ -16,18 +16,61 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        $user = auth::user();
+        $user = Auth::user();
 
-        // Get student data linked to logged-in user
+        // Student linked to user
         $student = students::where('user_id', $user->id)->first();
 
+        // Collections / defaults when missing
+        $healthRecords = collect();
+        $goals = collect();
+        $nutritionToday = [
+            'calories' => 0,
+            'protein' => 0,
+            'carbs' => 0,
+            'fat' => 0,
+        ];
+        $latestRecord = null;
+        $goalStats = [
+            'total' => 0,
+            'completed' => 0,
+        ];
 
-        // Get health records if student exists
-        $healthRecords = $student ? $student->healthRecords()->latest()->get() : collect();
-        $goals = $student ? $student->goals()->latest()->get() : collect();
-        $tips = Tip::latest()->take(5)->get();
+        if ($student) {
+            // All health records ordered latest first
+            $healthRecords = $student->healthRecords()->latest('recorded_at')->get();
+            $goals = $student->goals()->latest()->get();
+            $latestRecord = $healthRecords->first();
 
-        return view('dashboard', compact('user', 'student', 'healthRecords', 'goals', 'tips'));
+            // Today's nutrition aggregates
+            $todayRecords = $student->healthRecords()
+                ->whereDate('recorded_at', now()->toDateString())
+                ->get();
+            if ($todayRecords->isNotEmpty()) {
+                $nutritionToday['calories'] = (int) $todayRecords->sum('calories');
+                $nutritionToday['protein'] = (int) $todayRecords->sum('protein');
+                $nutritionToday['carbs'] = (int) $todayRecords->sum('carbs');
+                $nutritionToday['fat'] = (int) $todayRecords->sum('fat');
+            }
+
+            // Goal stats
+            $goalStats['total'] = $goals->count();
+            $goalStats['completed'] = $goals->where('is_completed', true)->count();
+        }
+
+        // Tips: load full list with authors for dashboard Tips section
+        $tips = Tip::with('user')->latest('created_at')->get();
+
+        return view('dashboard', compact(
+            'user',
+            'student',
+            'healthRecords',
+            'goals',
+            'tips',
+            'nutritionToday',
+            'latestRecord',
+            'goalStats'
+        ));
     }
 
     /**

@@ -29,24 +29,29 @@
 
 }
 
-html {
-    scroll-behavior: smooth;
-    scroll-padding-top: 30px;
-}
 
 body {
-    background-color: var(--primary);
+    background: var(--primary); /* solid green background */
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1.5rem;
+    margin: 0;
+    padding: 0; /* remove extra padding to avoid scroll */
     min-height: 100vh;
+    overflow-x: hidden; /* prevent horizontal scroll */
+}
+
+/* Ensure login page always shows green background regardless of other styles */
+.login-body {
+    background: var(--primary) !important;
 }
 
 main {
+    display: flex;
     justify-content: center;
     align-items: center;
-    height: 100%;
+    min-height: 100vh;
+    width: 100%;
 }
 
 
