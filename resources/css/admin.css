@@ -1,0 +1,25 @@
+/* Admin dashboard layout overrides */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* app.css sets body to flex-centered with padding; undo that here */
+body {
+  display: block !important;
+  padding: 0 !important;
+  background: #f8f9fa;
+}
+
+/* Ensure Vue root fills viewport */
+#app {
+  min-height: 100vh;
+  width: 100%;
+}
+
+/* Optional helpers if using a collapsible sidebar layout */
+.main-content {
+  min-height: 100vh;
+}
+
