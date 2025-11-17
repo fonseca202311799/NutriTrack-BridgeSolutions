@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\User;
 use App\Models\health_records;
 use App\Models\goals;
+use App\Models\WaterIntake;
+use App\Models\Exercise;
 
 
 class students extends Model
@@ -35,5 +37,15 @@ class students extends Model
     public function goals()
     {
         return $this->hasMany(goals::class, 'student_id');
+    }
+
+    public function waterIntakes()
+    {
+        return $this->hasMany(WaterIntake::class, 'student_id');
+    }
+
+    public function exercises()
+    {
+        return $this->hasMany(Exercise::class, 'student_id');
     }
 }

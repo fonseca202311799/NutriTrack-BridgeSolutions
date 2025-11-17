@@ -12,6 +12,8 @@ use App\Http\Controllers\TipsController;
 use App\Http\Controllers\GoalsController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\WaterIntakeController;
+use App\Http\Controllers\ExerciseController;
 
 
 
@@ -45,6 +47,8 @@ Route::middleware('auth')->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class)->except(['show', 'edit', 'update']);
     Route::resource('health-records', HealthRecordsController::class);
+    Route::resource('water-intakes', WaterIntakeController::class)->only(['index','store']);
+    Route::resource('exercises', ExerciseController::class)->only(['index','store']);
     Route::resource('tips', TipsController::class);
     Route::resource('goals', GoalsController::class);
     Route::resource('students', StudentsController::class);

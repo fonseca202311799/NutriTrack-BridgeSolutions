@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use App\Models\students;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Tip;
+use App\Models\WaterIntake;
+use App\Models\Exercise;
 
 class DashboardController extends Controller
 {
@@ -56,6 +58,17 @@ class DashboardController extends Controller
             // Goal stats
             $goalStats['total'] = $goals->count();
             $goalStats['completed'] = $goals->where('is_completed', true)->count();
+
+            // Hydration and Exercise summaries
+            $waterToday = WaterIntake::where('student_id', $student->id)
+                ->whereDate('recorded_at', now()->toDateString())
+                ->sum('amount_ml');
+            $recentWater = WaterIntake::where('student_id', $student->id)->latest('recorded_at')->take(5)->get();
+
+            $exerciseTodayMins = Exercise::where('student_id', $student->id)
+                ->whereDate('recorded_at', now()->toDateString())
+                ->sum('duration_min');
+            $recentExercises = Exercise::where('student_id', $student->id)->latest('recorded_at')->take(5)->get();
         }
 
         // Tips: load full list with authors for dashboard Tips section
@@ -69,7 +82,11 @@ class DashboardController extends Controller
             'tips',
             'nutritionToday',
             'latestRecord',
-            'goalStats'
+            'goalStats',
+            'waterToday',
+            'recentWater',
+            'exerciseTodayMins',
+            'recentExercises'
         ));
     }
 

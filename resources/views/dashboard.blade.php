@@ -92,14 +92,14 @@
         </nav>
     </aside>
 
-    <div id="section-dashboard" class="dashboard-container" style="display:grid; margin-left:306px; padding:20px; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
+    <div id="section-dashboard" class="dashboard-container offset" style="display:grid;">
         <!-- Welcome Card -->
-        <div class="card" style="grid-column:1/-1; text-align:left;">
+        <div class="card span-full welcome-card">
             <h2 style="margin-top:0;">Welcome, {{ auth()->user()->name }}!</h2>
             <p class="text" style="margin:4px 0 0;">Glad to have you back. Track your progress and stay consistent today.</p>
         </div>
         <!-- Nutrition Today -->
-        <div class="card">
+        <div class="card nutrition-card">
             <h2>Nutrition Today</h2>
             <p class="text" style="margin:0 0 10px;">Aggregated intake recorded for {{ now()->format('M d, Y') }}</p>
             <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px;">
@@ -116,7 +116,7 @@
                     <strong>{{ $nutritionToday['fat'] }}</strong><br><small>Fat (g)</small>
                 </li>
             </ul>
-            <div style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
+            <div class="card-actions" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="btn-card" type="button" onclick="openModal('addIntakeModal')">Add Intake</button>
                 <a class="btn-card" href="{{ route('health-records.index') }}">View Records</a>
             </div>
@@ -146,38 +146,70 @@
                 <div style="height:100%; width:{{ $percent }}%; background:#4caf50;"></div>
             </div>
             <p class="text" style="margin-top:6px;">Progress: <strong>{{ $percent }}%</strong></p>
-            <a class="btn-card" href="{{ route('goals.index') }}" style="margin-top:12px;">Manage Goals</a>
+            <canvas id="goalsChart" height="90" style="margin-top:8px;"></canvas>
         </div>
 
-        <!-- Detailed Goals List -->
-        <div class="card" style="grid-column:1/-1;">
-            <h2>Health Goals</h2>
-            @if($goals->isEmpty())
-                <p class="text">No goals yet. Set your first goal!</p>
-            @else
-                <ul style="list-style:none; padding:0; margin:0; text-align:left;">
-                    @foreach($goals as $goal)
-                        <li style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f1f1;">
-                            <span>
-                                <strong>{{ ucfirst($goal->goal_type) }}</strong>
-                                <small style="color:#666"> — target: {{ $goal->target }}</small>
-                            </span>
-                            @if($goal->is_completed)
-                                <span class="badge" style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px;">Completed</span>
-                            @else
-                                <span class="badge" style="background:#eee; color:#333; padding:4px 8px; border-radius:6px;">In progress</span>
-                            @endif
+
+
+        <!-- Hydration -->
+        <div class="card">
+            <h2>Water</h2>
+            <p class="text" style="margin:0;">Today: <strong>{{ ($waterToday ?? 0) }} ml</strong></p>
+            @if(isset($recentWater) && $recentWater->isNotEmpty())
+                <ul style="list-style:none; padding:0; margin-top:8px; text-align:left;">
+                    @foreach($recentWater as $w)
+                        <li style="padding:6px 0; border-bottom:1px solid #f1f1f1;">
+                            {{ $w->recorded_at?->format('M d, H:i') }} — <strong>{{ $w->amount_ml }} ml</strong>
                         </li>
                     @endforeach
                 </ul>
+            @else
+                <p class="text" style="margin-top:8px;">No water logs yet.</p>
             @endif
-            <a class="btn-card" href="{{ route('goals.index') }}" style="margin-top:12px;">Manage Goals</a>
+            <form method="POST" action="{{ route('water-intakes.store') }}" class="quick-add" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;">
+                @csrf
+                <input type="number" name="amount_ml" class="form-control" placeholder="Amount (ml)" min="1">
+                <input type="datetime-local" name="recorded_at" class="form-control">
+                <input type="hidden" name="redirect_to" value="dashboard">
+                <div class="form-actions" style="grid-column:1/-1; justify-content:flex-end;">
+                    <button class="btn-card" type="submit">Add</button>
+                </div>
+            </form>
+            @error('amount_ml')<p class="text" style="color:#b71c1c; margin-top:6px;">{{ $message }}</p>@enderror
+        </div>
+
+        <!-- Exercise -->
+        <div class="card exercise-card">
+            <h2>Exercise</h2>
+            <p class="text" style="margin:0;">Today: <strong>{{ ($exerciseTodayMins ?? 0) }} min</strong></p>
+            @if(isset($recentExercises) && $recentExercises->isNotEmpty())
+                <ul style="list-style:none; padding:0; margin-top:8px; text-align:left;">
+                    @foreach($recentExercises as $ex)
+                        <li style="padding:6px 0; border-bottom:1px solid #f1f1f1;">
+                            {{ $ex->recorded_at?->format('M d, H:i') }} — <strong>{{ ucfirst($ex->type) }}</strong> ({{ $ex->duration_min }} min)
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="text" style="margin-top:8px;">No exercise logs yet.</p>
+            @endif
+            <form method="POST" action="{{ route('exercises.store') }}" class="quick-add" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;">
+                @csrf
+                <input type="text" name="type" class="form-control" placeholder="Type (e.g., Run)">
+                <input type="number" name="duration_min" class="form-control" placeholder="Minutes" min="1">
+                <input type="datetime-local" name="recorded_at" class="form-control">
+                <input type="hidden" name="redirect_to" value="dashboard">
+                <div class="form-actions" style="grid-column:1/-1; justify-content:flex-end;">
+                    <button class="btn-card" type="submit">Add</button>
+                </div>
+            </form>
+            @error('duration_min')<p class="text" style="color:#b71c1c; margin-top:6px;">{{ $message }}</p>@enderror
         </div>
     </div>
 
         <!-- Health Section -->
-        <div id="section-health" class="dashboard-container" style="display:none; margin-left:306px; padding:20px; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
-            <div class="card">
+        <div id="section-health" class="dashboard-container offset" style="display:none;">
+            <div class="card span-full">
                 <h2>Health</h2>
                 <p class="text">Latest BMI:
                     @if(isset($latestRecord) && property_exists($latestRecord, 'bmi') && $latestRecord->bmi)
@@ -245,8 +277,8 @@
         </div>
 
         <!-- Goals Section -->
-        <div id="section-goals" class="dashboard-container" style="display:none; margin-left:306px; padding:20px; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
-            <div class="card">
+        <div id="section-goals" class="dashboard-container offset" style="display:none;">
+            <div class="card span-full">
                 <h2>Goals</h2>
                 @if($goals->isEmpty())
                     <p class="text">No goals yet. Set your first goal!</p>
@@ -272,8 +304,8 @@
         </div>
 
         <!-- Tips Section -->
-        <div id="section-tips" class="dashboard-container" style="display:none; margin-left:306px; padding:20px; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
-            <div class="card" style="grid-column:1/-1; text-align:left;">
+        <div id="section-tips" class="dashboard-container offset" style="display:none;">
+            <div class="card span-full">
                 <h2>Tips</h2>
                 @if(isset($tips) && $tips->isNotEmpty())
                     <ul style="list-style:none; padding:0; margin:0;">
@@ -319,16 +351,16 @@
         </div>
 
         <!-- Settings Section -->
-        <div id="section-settings" class="dashboard-container" style="display:none; margin-left:306px; padding:20px; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
-            <div class="card">
+        <div id="section-settings" class="dashboard-container offset" style="display:none;">
+            <div class="card span-full">
                 <h2>Settings</h2>
                 <p class="text">Customize your experience. More options coming soon.</p>
             </div>
         </div>
 
         <!-- Profile Section -->
-        <div id="section-profile" class="dashboard-container" style="display:none; margin-left:306px; padding:20px; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));">
-            <div class="card" style="grid-column:1/-1; text-align:left;">
+        <div id="section-profile" class="dashboard-container offset" style="display:none;">
+            <div class="card span-full">
                 <div style="display:flex; align-items:center; gap:18px; flex-wrap:wrap;">
                     <div style="width:70px; height:70px; border-radius:50%; background:#e8f5e9; display:flex; align-items:center; justify-content:center; font-size:1.8rem; font-weight:600; color:#2a7d2e; box-shadow:0 4px 8px rgba(0,0,0,.08);">
                         {{ strtoupper(substr(auth()->user()->name,0,1)) }}
@@ -365,6 +397,7 @@
                             <div class="form-group">
                                 <label class="form-label" for="profile_age">Age</label>
                                 <input id="profile_age" type="number" min="1" name="age" class="form-control" value="{{ old('age', $student->age) }}" placeholder="e.g., 17" />
+                                @error('age')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="profile_sex">Sex</label>
@@ -374,10 +407,12 @@
                                     <option value="female" {{ old('sex', strtolower((string)$student->sex)) === 'female' ? 'selected' : '' }}>Female</option>
                                     <option value="other" {{ old('sex', strtolower((string)$student->sex)) === 'other' ? 'selected' : '' }}>Other</option>
                                 </select>
+                                @error('sex')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="profile_grade">Grade Level</label>
                                 <input id="profile_grade" type="text" name="grade_level" class="form-control" value="{{ old('grade_level', $student->grade_level) }}" placeholder="e.g., Grade 10" />
+                                @error('grade_level')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                             </div>
                             <div class="form-actions" style="justify-content:flex-start;">
                                 <button type="submit" class="btn-card">Save Changes</button>
@@ -411,10 +446,11 @@
                 @csrf
                 <input type="hidden" name="redirect_to" value="dashboard">
 
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;">
+                <div class="form-grid">
                     <div>
                         <label class="form-label">Calories (kcal)</label>
                         <input type="number" name="calories" min="0" class="form-control" />
+                        @error('calories')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                     </div>
                     <div>
                         <label class="form-label">Protein (g)</label>
@@ -430,7 +466,8 @@
                     </div>
                     <div>
                         <label class="form-label">Recorded at</label>
-                        <input type="date" name="recorded_at" class="form-control" />
+                        <input type="date" name="recorded_at" class="form-control" required />
+                        @error('recorded_at')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                     </div>
                 </div>
 
@@ -508,6 +545,34 @@
         }
         document.addEventListener('DOMContentLoaded', function() {
             showSection('dashboard');
+            // Goals chart render
+            var ctx = document.getElementById('goalsChart');
+            if (ctx && window.Chart) {
+                try {
+                    new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Completed', 'Remaining'],
+                            datasets: [{
+                                data: [{{ $goalStats['completed'] }}, {{ max(0, $goalStats['total'] - $goalStats['completed']) }}],
+                                backgroundColor: ['#4caf50', '#e0e0e0'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: {
+                            plugins: {legend: {position: 'bottom'}},
+                            cutout: '65%'
+                        }
+                    });
+                } catch (e) { /* noop */ }
+            }
+        });
+
+        // Close modals with ESC
+        document.addEventListener('keydown', function(e){
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal').forEach(function(modal){ modal.style.display = 'none'; });
+            }
         });
 
         // Tip Modal logic

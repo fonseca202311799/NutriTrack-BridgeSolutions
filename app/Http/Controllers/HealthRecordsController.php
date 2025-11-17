@@ -11,7 +11,15 @@ class HealthRecordsController extends Controller
 {
     public function index()
     {
-        $records = health_records::with('student')->get();
+        $user = Auth::user();
+        if ($user && $user->role === 'admin') {
+            $records = health_records::with('student')->latest('recorded_at')->get();
+        } else {
+            $student = students::where('user_id', $user?->id)->first();
+            $records = $student
+                ? health_records::with('student')->where('student_id', $student->id)->latest('recorded_at')->get()
+                : collect();
+        }
         return view('health_records.index', compact('records'));
     }
 
@@ -30,12 +38,18 @@ class HealthRecordsController extends Controller
             'weight' => 'nullable|numeric|min:0',
             'bmi' => 'nullable|numeric',
             'status' => 'nullable|string|max:255',
-            'recorded_at' => 'nullable|date',
+            'recorded_at' => 'required|date',
             'calories' => 'nullable|integer|min:0',
             'protein' => 'nullable|integer|min:0',
             'carbs' => 'nullable|integer|min:0',
             'fat' => 'nullable|integer|min:0',
         ]);
+
+        // Ensure at least one macro/calorie field provided
+        $macroSum = (int)($validated['calories'] ?? 0) + (int)($validated['protein'] ?? 0) + (int)($validated['carbs'] ?? 0) + (int)($validated['fat'] ?? 0);
+        if ($macroSum === 0) {
+            return back()->withErrors(['calories' => 'Provide at least one of calories, protein, carbs, or fat.'])->withInput();
+        }
 
         // If student_id not provided (student self-logging), use the logged-in user's student record
         if (empty($validated['student_id'])) {
@@ -51,10 +65,7 @@ class HealthRecordsController extends Controller
             }
         }
 
-        // Default recorded_at to today if not set
-        if (empty($validated['recorded_at'])) {
-            $validated['recorded_at'] = now();
-        }
+        // recorded_at is required above; keep as provided
 
         // Auto-calc BMI if height/weight present and bmi missing
         if (empty($validated['bmi']) && !empty($validated['height']) && !empty($validated['weight'])) {

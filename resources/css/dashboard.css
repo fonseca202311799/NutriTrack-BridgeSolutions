@@ -224,28 +224,57 @@ body {
 
 .dashboard-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    padding: 20px;
-    margin-top: 50px;
+    grid-template-columns: repeat(2, 1fr); /* exactly two cards per row on desktop */
+    gap: 16px;
+    padding: 16px 20px;
+    margin-top: 40px;
     overflow: visible; /* ensure the page scrolls, not individual cards */
+}
+
+/* When sidebar is collapsed on wide screens, allow more responsive columns */
+.sidebar.collapsed ~ .dashboard-container.offset,
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset,
+.sidebar.collapsed ~ #section-health.dashboard-container.offset,
+.sidebar.collapsed ~ #section-goals.dashboard-container.offset,
+.sidebar.collapsed ~ #section-tips.dashboard-container.offset,
+.sidebar.collapsed ~ #section-settings.dashboard-container.offset,
+.sidebar.collapsed ~ #section-profile.dashboard-container.offset {
+    margin-left: 100px;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    transition: margin-left .3s ease, grid-template-columns .3s ease;
+}
+
+/* Offset main grid to make room for sidebar */
+.dashboard-container.offset {
+    margin-left: 306px;
+}
+
+@media (max-width: 900px) {
+    .sidebar {
+        width: 75px;
+    }
+    .sidebar .nav-label { display: none; }
+    .dashboard-container.offset { margin-left: 100px !important; }
+    .dashboard-container {
+        grid-template-columns: 1fr; /* single column on smaller screens */
+    }
 }
 
 .card {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 20px;
+    border-radius: 12px;
+    padding: 16px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    text-align: center;
+    text-align: left;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     overflow: visible; /* prevent inner scrollbars */
     max-height: none;  /* allow content to expand naturally */
+    display: flex;
+    flex-direction: column;
 }
 
-/* Health section: left-align content for form readability */
-#section-health .card {
-    text-align: left;
-}
+/* Span full width across the grid when needed */
+.span-full { grid-column: 1 / -1; }
 
 /* Form styling */
 .form-grid {
@@ -287,6 +316,7 @@ body {
     display: flex;
     gap: 10px;
     justify-content: flex-end;
+    width: 100%;
 }
 
 details.form-details summary {
@@ -295,12 +325,46 @@ details.form-details summary {
     font-weight: 600;
 }
 
-/* Ensure dashboard cards never scroll and grow with content */
+/* Dashboard: unify card heights (excluding span-full welcome) */
 #section-dashboard .card {
-    overflow: visible !important;
-    overflow-y: visible !important;
-    height: auto !important;
-    max-height: none !important;
+    overflow: visible;
+    height: 280px;
+    max-height: 280px;
+}
+
+/* Reduced height for the welcome card */
+#section-dashboard .card.welcome-card {
+    height: 160px;
+    max-height: 160px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* Allow taller / auto height for dynamic content cards to prevent button overflow */
+#section-dashboard .card.nutrition-card,
+#section-dashboard .card.exercise-card {
+    height: auto;
+    max-height: none;
+}
+
+/* Collapsed sidebar: make action buttons wrap safely without overflow */
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.nutrition-card .card-actions,
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.exercise-card .form-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.nutrition-card .card-actions .btn-card,
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.exercise-card .form-actions .btn-card {
+    flex: 1 1 120px;
+    min-width: 120px;
+    text-align: center;
+}
+
+/* Ensure quick-add form inputs shrink on collapse to avoid horizontal overflow */
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.exercise-card form.quick-add,
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.nutrition-card ul {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
 }
 
 .card:hover {
@@ -310,14 +374,14 @@ details.form-details summary {
 
 .card h2 {
     color: #2a7d2e;
-    font-size: 1.5rem;
-    margin-bottom: 10px;
+    font-size: 1.25rem;
+    margin-bottom: 8px;
 }
 
 .card p {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #555;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .btn-card {
@@ -325,12 +389,27 @@ details.form-details summary {
     background-color: #43b649;
     color: #fff;
     text-decoration: none;
-    padding: 10px 16px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
     font-weight: 600;
+    font-size: 0.9rem;
     transition: background-color 0.2s ease;
     border: none;
 }
+
+/* Ensure buttons anchor to bottom area if card grows */
+.card .card-actions,
+.card .form-actions { margin-top: auto; }
+
+/* Collapsed sidebar: keep buttons from stretching full width in responsive grid */
+.sidebar.collapsed ~ .dashboard-container.offset .btn-card,
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .btn-card { width: auto; }
+
+/* Anchor quick-add forms lower in card for consistent button placement */
+#section-dashboard .card form.quick-add { margin-top: auto; }
+
+/* Nutrition card: keep action buttons aligned right when collapsed */
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card .card-actions { justify-content: flex-end; }
 
 .btn-card:hover {
     background-color: #358a38;

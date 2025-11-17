@@ -6,6 +6,7 @@
     <title>Login and Registration</title>
 
     @vite(['resources/css/dashboard.css', 'resources/js/dashboard.js'])
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://kit.fontawesome.com/7c33d9b7cf.js" crossorigin="anonymous"></script>
     <link rel="icon" type="image/png" href="{{ asset('images/small_logo.png') }}">
