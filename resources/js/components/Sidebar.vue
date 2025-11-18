@@ -16,9 +16,9 @@
         </router-link>
       </li>
       <li class="nav-item mb-2">
-        <router-link to="/active-plans" class="nav-link d-flex align-items-center text-white" active-class="active">
+        <router-link to="/goals" class="nav-link d-flex align-items-center text-white" active-class="active">
           <i class="bi bi-clipboard-check me-2"></i>
-          <span>Active Plans</span>
+          <span>Goals</span>
         </router-link>
       </li>
       <li class="nav-item mb-2">

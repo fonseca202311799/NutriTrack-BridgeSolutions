@@ -62,6 +62,11 @@ class RecommendationService
                     $score += 1;
                 }
             }
+            // Student-friendly boosts based on tags
+            $tags = array_map('strtolower', (array)($r->tags ?? []));
+            if (in_array('student-friendly', $tags)) { $score += 3; }
+            if (in_array('quick', $tags)) { $score += 2; }
+            if (in_array('budget', $tags)) { $score += 2; }
             return $score;
         });
 

@@ -14,6 +14,7 @@ use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\WaterIntakeController;
 use App\Http\Controllers\ExerciseController;
+use App\Http\Controllers\ReportController;
 
 
 
@@ -23,6 +24,9 @@ Route::get('/', function () {
 })->name('welcome');
 
 Route::get('login', function() {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
     return view('login');
 })->name('login');
 
@@ -43,7 +47,7 @@ Route::view('register', 'register')->name('register');
 Route::post('register', RegisterController::class)->middleware('auth')->name('register.store');
 
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class)->except(['show', 'edit', 'update']);
     Route::resource('health-records', HealthRecordsController::class);
@@ -52,6 +56,13 @@ Route::middleware('auth')->group(function () {
     Route::resource('tips', TipsController::class);
     Route::resource('goals', GoalsController::class);
     Route::resource('students', StudentsController::class);
+
+    // Reports
+    Route::get('reports/health', [ReportController::class, 'health'])->name('reports.health');
+    Route::get('reports/health.csv', [ReportController::class, 'healthCsv'])->name('reports.health.csv');
+
+    // Admin API endpoints
+    Route::get('admin/api/goals', [GoalsController::class, 'adminList'])->name('admin.api.goals');
 
 
     // Admin SPA entry (friendly redirect for non-admins instead of 403)

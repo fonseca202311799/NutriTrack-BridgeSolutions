@@ -17,8 +17,8 @@
           </router-link>
         </li>
         <li class="nav-item">
-          <router-link to="/active-plans" class="nav-link" active-class="active">
-            <i class="bi bi-clipboard-check me-2"></i> Active Plans
+          <router-link to="/goals" class="nav-link" active-class="active">
+            <i class="bi bi-clipboard-check me-2"></i> Goals
           </router-link>
         </li>
         <li class="nav-item">

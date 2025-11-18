@@ -53,16 +53,16 @@ class StudentsController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(students $students)
+    public function show(students $student)
     {
-        $students->load(['user', 'healthRecords', 'goals']);
+        $student->load(['user', 'healthRecords', 'goals']);
         return view('students.show', compact('student'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(students $students)
+    public function edit(students $student)
     {
         $users = User::where('role', 'student')->get();
         return view('students.edit', compact('student', 'users'));
@@ -71,7 +71,7 @@ class StudentsController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, students $students)
+    public function update(Request $request, students $student)
     {
          $validated = $request->validate([
             'age' => 'nullable|integer|min:1',
@@ -79,7 +79,7 @@ class StudentsController extends Controller
             'grade_level' => 'nullable|string|max:255',
         ]);
 
-        $students->update($validated);
+        $student->update($validated);
         if ($request->filled('redirect_to') && $request->input('redirect_to') === 'dashboard') {
             return redirect()->route('dashboard')->with('success', 'Profile updated successfully!');
         }
@@ -89,9 +89,9 @@ class StudentsController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(students $students)
+    public function destroy(students $student)
     {
-        $students->delete();
+        $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully!');
     }
 }

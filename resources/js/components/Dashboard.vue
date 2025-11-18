@@ -13,8 +13,8 @@
 
       <div class="col-md-4">
         <div class="card text-center p-3">
-          <h5>Active Plans</h5>
-          <p class="display-6 fw-bold text-success">2</p>
+          <h5>Goals</h5>
+          <p class="display-6 fw-bold text-success">{{ goalsActive }}</p>
         </div>
       </div>
       <div class="col-md-4">
@@ -31,9 +31,23 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import axios from 'axios'
 import UserTable from './UserTable.vue'
 
 // reactive value for "Total Users"
 const totalUsers = ref(0)
+
+// goals count
+const goalsActive = ref(0)
+
+onMounted(async () => {
+  try {
+    const { data } = await axios.get('/admin/api/goals')
+    const items = data?.data || []
+    goalsActive.value = (data?.meta?.active) ?? items.filter(g => !g.is_completed).length
+  } catch (e) {
+    // if API not available, keep zero
+  }
+})
 </script>

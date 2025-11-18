@@ -18,7 +18,8 @@
     function openCompleteGoalModal(goalId) {
         var modal = document.getElementById('completeGoalModal');
         var form = document.getElementById('completeGoalForm');
-        form.action = '/goals/' + goalId;
+        var actionTemplate = "{{ route('goals.update', ['goal' => 'GOAL_ID_PLACEHOLDER']) }}";
+        form.action = actionTemplate.replace('GOAL_ID_PLACEHOLDER', goalId);
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
@@ -56,7 +57,8 @@
     function openDeleteGoalModal(goalId) {
         var modal = document.getElementById('deleteGoalModal');
         var form = document.getElementById('deleteGoalForm');
-        form.action = '/goals/' + goalId;
+        var actionTemplate = "{{ route('goals.destroy', ['goal' => 'GOAL_ID_PLACEHOLDER']) }}";
+        form.action = actionTemplate.replace('GOAL_ID_PLACEHOLDER', goalId);
         modal.style.display = 'flex';
         document.body.style.overflow = 'hidden';
     }
@@ -179,6 +181,9 @@
         <div class="card span-full welcome-card">
             <h2 style="margin-top:0;">Welcome, {{ auth()->user()->name }}!</h2>
             <p class="text" style="margin:4px 0 0;">Glad to have you back. Track your progress and stay consistent today.</p>
+            <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
+                <a class="btn-card" href="#" onclick="openModal('healthReportModal'); return false;">Health Report</a>
+            </div>
         </div>
         <!-- Nutrition Today -->
         <div class="card nutrition-card">
@@ -729,6 +734,14 @@
                     <button type="submit" class="btn-card">Save Intake</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Health Report Modal -->
+    <div id="healthReportModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:1000px; width:95%; height:80vh;">
+            <span class="close" onclick="closeModal('healthReportModal')">&times;</span>
+            <iframe src="{{ route('reports.health', ['embed' => 1]) }}" style="width:100%; height:100%; border:none; border-radius:8px; background:#fff;"></iframe>
         </div>
     </div>
 

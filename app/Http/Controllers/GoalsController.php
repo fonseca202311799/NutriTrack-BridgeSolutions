@@ -6,6 +6,8 @@ use App\Models\goals;
 use App\Models\GoalProgress;
 use Illuminate\Http\Request;
 use App\Models\students;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\JsonResponse;
 
 class GoalsController extends Controller
 {
@@ -81,5 +83,39 @@ class GoalsController extends Controller
     {
         $goal->delete();
         return back()->with('success', 'Goal deleted successfully!');
+    }
+
+    // Admin: list all students' goals for admin dashboard (JSON)
+    public function adminList(): JsonResponse
+    {
+        $user = Auth::user();
+        if (!$user || ($user->role ?? null) !== 'admin') {
+            abort(403);
+        }
+
+        $items = goals::with(['student.user'])->latest('updated_at')->limit(200)->get()->map(function ($g) {
+            return [
+                'id' => $g->id,
+                'student_id' => $g->student_id,
+                'student_name' => optional(optional($g->student)->user)->name ?? 'Unknown',
+                'goal_type' => $g->goal_type,
+                'target' => $g->target,
+                'target_value' => $g->target_value,
+                'target_unit' => $g->target_unit,
+                'current_value' => $g->current_value,
+                'is_completed' => (bool)$g->is_completed,
+                'due_date' => $g->due_date,
+                'updated_at' => $g->updated_at,
+            ];
+        })->values();
+
+        return response()->json([
+            'data' => $items,
+            'meta' => [
+                'count' => $items->count(),
+                'active' => $items->where('is_completed', false)->count(),
+                'completed' => $items->where('is_completed', true)->count(),
+            ],
+        ]);
     }
 }
