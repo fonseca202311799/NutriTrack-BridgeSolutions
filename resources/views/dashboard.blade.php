@@ -1,4 +1,73 @@
 <x-dashboard-layout>
+<!-- Complete Goal Modal -->
+<div id="completeGoalModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:400px; text-align:center;">
+        <span class="close" onclick="closeCompleteGoalModal()" style="position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer;">&times;</span>
+        <h2 style="margin-top:0; color:#2a7d2e;">Complete Goal</h2>
+        <p class="text" style="margin:12px 0;">Are you sure you want to mark this goal as completed?</p>
+        <form id="completeGoalForm" method="POST" style="margin-top:16px;">
+            @csrf
+            @method('PATCH')
+            <input type="hidden" name="is_completed" value="1">
+            <button type="submit" class="btn-card" style="background:#4caf50;">Confirm Complete</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCompleteGoalModal(goalId) {
+        var modal = document.getElementById('completeGoalModal');
+        var form = document.getElementById('completeGoalForm');
+        form.action = '/goals/' + goalId;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeCompleteGoalModal() {
+        var modal = document.getElementById('completeGoalModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    // Close modal on ESC
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') closeCompleteGoalModal();
+    });
+    // Close modal on click outside
+    document.getElementById('completeGoalModal').onclick = function(e){
+        if (e.target === this) closeCompleteGoalModal();
+    };
+</script>
+
+<!-- Delete Goal Modal -->
+<div id="deleteGoalModal" class="modal" style="display:none;">
+    <div class="modal-content" style="max-width:420px; text-align:center;">
+        <span class="close" onclick="closeDeleteGoalModal()" style="position:absolute;top:10px;right:15px;font-size:1.5rem;cursor:pointer;">&times;</span>
+        <h2 style="margin-top:0; color:#b71c1c;">Delete Goal</h2>
+        <p class="text" style="margin:12px 0;">This action cannot be undone. Do you want to delete this goal?</p>
+        <form id="deleteGoalForm" method="POST" style="margin-top:16px;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn-card" style="background:#b71c1c;">Confirm Delete</button>
+        </form>
+    </div>
+
+</div>
+
+<script>
+    function openDeleteGoalModal(goalId) {
+        var modal = document.getElementById('deleteGoalModal');
+        var form = document.getElementById('deleteGoalForm');
+        form.action = '/goals/' + goalId;
+        modal.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+    function closeDeleteGoalModal() {
+        var modal = document.getElementById('deleteGoalModal');
+        modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+    document.addEventListener('keydown', function(e){ if(e.key==='Escape') closeDeleteGoalModal(); });
+    document.getElementById('deleteGoalModal').onclick = function(e){ if(e.target===this) closeDeleteGoalModal(); };
+</script>
 
     @if(session('login_success'))
         <div id="toast-login-success" style="position:fixed; top:20px; right:20px; z-index:2000; background:#2e7d32; color:#fff; padding:14px 18px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.2); font-weight:600; display:flex; align-items:center; gap:10px;">
@@ -8,6 +77,19 @@
         <script>
             setTimeout(function(){
                 var t = document.getElementById('toast-login-success');
+                if(t){ t.style.transition='opacity .5s'; t.style.opacity='0'; setTimeout(function(){ if(t && t.parentNode){ t.parentNode.removeChild(t);} }, 550); }
+            }, 3000);
+        </script>
+    @endif
+
+    @if(session('goal_added'))
+        <div id="toast-goal-added" style="position:fixed; top:20px; right:20px; z-index:2000; background:#2e7d32; color:#fff; padding:14px 18px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.2); font-weight:600; display:flex; align-items:center; gap:10px;">
+            <span style="display:inline-block; background:#43b649; width:10px; height:10px; border-radius:50%;"></span>
+            {{ session('success') ?? 'Goal added successfully!' }}
+        </div>
+        <script>
+            setTimeout(function(){
+                var t = document.getElementById('toast-goal-added');
                 if(t){ t.style.transition='opacity .5s'; t.style.opacity='0'; setTimeout(function(){ if(t && t.parentNode){ t.parentNode.removeChild(t);} }, 550); }
             }, 3000);
         </script>
@@ -118,7 +200,6 @@
             </ul>
             <div class="card-actions" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="btn-card" type="button" onclick="openModal('addIntakeModal')">Add Intake</button>
-                <a class="btn-card" href="{{ route('health-records.index') }}">View Records</a>
             </div>
         </div>
 
@@ -137,7 +218,7 @@
         </div>
 
         <!-- Goals Summary -->
-        <div class="card">
+        <div class="card goals-card">
             <h2>Goals Summary</h2>
             @php($percent = $goalStats['total'] ? round(($goalStats['completed'] / $goalStats['total']) * 100) : 0)
             <p class="text" style="margin:0;">Total Goals: <strong>{{ $goalStats['total'] }}</strong></p>
@@ -146,7 +227,20 @@
                 <div style="height:100%; width:{{ $percent }}%; background:#4caf50;"></div>
             </div>
             <p class="text" style="margin-top:6px;">Progress: <strong>{{ $percent }}%</strong></p>
-            <canvas id="goalsChart" height="90" style="margin-top:8px;"></canvas>
+            <div class="goals-chart-wrap" style="margin-top:8px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px;">
+                <div style="position:relative; width:80px; height:80px; margin:0 auto;">
+                    <canvas id="goalsChart" width="80" height="80"></canvas>
+                    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-weight:700; color:#2a7d2e; font-size:0.8rem;">{{ $percent }}%</div>
+                </div>
+                <div class="mini-legend" style="display:flex; align-items:center; gap:6px; flex-wrap:wrap; justify-content:center;">
+                    <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#555;">
+                        <span style="width:6px; height:6px; background:#4caf50; border-radius:50%; display:inline-block;"></span>
+                    </span>
+                    <span style="display:inline-flex; align-items:center; gap:4px; font-size:0.75rem; color:#555;">
+                        <span style="width:6px; height:6px; background:#e0e0e0; border-radius:50%; display:inline-block;"></span>
+                    </span>
+                </div>
+            </div>
         </div>
 
 
@@ -247,32 +341,121 @@
                         </div>
                     </div>
 
-                    <details class="form-details" style="margin-top:12px;">
-                        <summary>Optional: body metrics</summary>
-                        <div class="form-grid" style="margin-top:12px;">
-                            <div class="form-group">
-                                <label class="form-label" for="height">Height (cm)</label>
-                                <input id="height" type="number" step="0.1" name="height" min="0" class="form-control" placeholder="e.g., 170" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="weight">Weight (kg)</label>
-                                <input id="weight" type="number" step="0.1" name="weight" min="0" class="form-control" placeholder="e.g., 65" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="bmi">BMI</label>
-                                <input id="bmi" type="number" step="0.1" name="bmi" min="0" class="form-control" placeholder="e.g., 22.5" />
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="status">Status</label>
-                                <input id="status" type="text" name="status" class="form-control" placeholder="e.g., Normal" />
-                            </div>
+                    <div class="form-grid" style="margin-top:12px;">
+                        <div class="form-group">
+                            <label class="form-label" for="height">Height (cm)</label>
+                            <input id="height" type="number" step="0.1" name="height" min="0" class="form-control" placeholder="e.g., 170" />
                         </div>
-                    </details>
+                        <div class="form-group">
+                            <label class="form-label" for="weight">Weight (kg)</label>
+                            <input id="weight" type="number" step="0.1" name="weight" min="0" class="form-control" placeholder="e.g., 65" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="bmi">BMI</label>
+                            <input id="bmi" type="number" step="0.1" name="bmi" min="0" class="form-control" placeholder="Auto-calculated" readonly />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="status">Status</label>
+                            <input id="status" type="text" name="status" class="form-control" placeholder="Auto-calculated" readonly />
+                        </div>
+                    </div>
 
-                    <div class="form-actions">
+                    <div class="form-actions" style="margin-top:12px;">
                         <button type="submit" class="btn-card">Save Intake</button>
                     </div>
                 </form>
+            </div>
+
+            <!-- Water (Health Section) -->
+            <div class="card health-tracker">
+                <h2>Water</h2>
+                <p class="text" style="margin:0;">Today: <strong>{{ ($waterToday ?? 0) }} ml</strong></p>
+                @if(isset($recentWater) && $recentWater->isNotEmpty())
+                    <ul style="list-style:none; padding:0; margin-top:8px; text-align:left;">
+                        @foreach($recentWater as $w)
+                            <li style="padding:6px 0; border-bottom:1px solid #f1f1f1;">
+                                {{ $w->recorded_at?->format('M d, H:i') }} — <strong>{{ $w->amount_ml }} ml</strong>
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text" style="margin-top:8px;">No water logs yet.</p>
+                @endif
+                <form method="POST" action="{{ route('water-intakes.store') }}" class="quick-add" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;">
+                    @csrf
+                    <input type="number" name="amount_ml" class="form-control" placeholder="Amount (ml)" min="1">
+                    <input type="datetime-local" name="recorded_at" class="form-control">
+                    <input type="hidden" name="redirect_to" value="dashboard">
+                    <div class="form-actions" style="grid-column:1/-1; justify-content:flex-end;">
+                        <button class="btn-card" type="submit">Add</button>
+                    </div>
+                </form>
+                @error('amount_ml')<p class="text" style="color:#b71c1c; margin-top:6px;">{{ $message }}</p>@enderror
+            </div>
+
+            <!-- Exercise (Health Section) -->
+            <div class="card exercise-card health-tracker">
+                <h2>Exercise</h2>
+                <p class="text" style="margin:0;">Today: <strong>{{ ($exerciseTodayMins ?? 0) }} min</strong></p>
+                @if(isset($recentExercises) && $recentExercises->isNotEmpty())
+                    <ul style="list-style:none; padding:0; margin-top:8px; text-align:left;">
+                        @foreach($recentExercises as $ex)
+                            <li style="padding:6px 0; border-bottom:1px solid #f1f1f1;">
+                                {{ $ex->recorded_at?->format('M d, H:i') }} — <strong>{{ ucfirst($ex->type) }}</strong> ({{ $ex->duration_min }} min)
+                            </li>
+                        @endforeach
+                    </ul>
+                @else
+                    <p class="text" style="margin-top:8px;">No exercise logs yet.</p>
+                @endif
+                <form method="POST" action="{{ route('exercises.store') }}" class="quick-add" style="margin-top:12px; display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:8px;">
+                    @csrf
+                    <input type="text" name="type" class="form-control" placeholder="Type (e.g., Run)">
+                    <input type="number" name="duration_min" class="form-control" placeholder="Minutes" min="1">
+                    <input type="datetime-local" name="recorded_at" class="form-control">
+                    <input type="hidden" name="redirect_to" value="dashboard">
+                    <div class="form-actions" style="grid-column:1/-1; justify-content:flex-end;">
+                        <button class="btn-card" type="submit">Add</button>
+                    </div>
+                </form>
+                @error('duration_min')<p class="text" style="color:#b71c1c; margin-top:6px;">{{ $message }}</p>@enderror
+            </div>
+
+            <!-- Recommendations (Health Section) -->
+            <div class="card span-full">
+                <h2>Smart Recommendations</h2>
+                @if(!$student)
+                    <p class="text">Create a student profile to get personalized suggestions.</p>
+                @else
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px,1fr)); gap:12px; margin-top:8px;">
+                        @foreach(['breakfast','lunch','dinner','snack'] as $meal)
+                            <div style="border:1px solid #eee; border-radius:8px; padding:12px;">
+                                <h3 style="margin:0 0 6px 0; text-transform:capitalize;">{{ $meal }}</h3>
+                                @php($items = $reco[$meal] ?? [])
+                                @if(empty($items))
+                                    <p class="text" style="margin:0; color:#666;">No suggestion available.</p>
+                                @else
+                                    @foreach($items as $r)
+                                        <div style="margin-bottom:8px;">
+                                            <strong>{{ $r['title'] ?? $r->title }}</strong>
+                                            @php($desc = $r['description'] ?? $r->description)
+                                            @if($desc)
+                                                <p class="text" style="margin:4px 0; color:#555;">{{ $desc }}</p>
+                                            @endif
+                                            <small style="color:#666;">
+                                                {{ ($r['calories'] ?? $r->calories) ? ($r['calories'] ?? $r->calories).' kcal' : '' }}
+                                                @if(($r['protein'] ?? $r->protein) || ($r['carbs'] ?? $r->carbs) || ($r['fat'] ?? $r->fat))
+                                                    • P:{{ $r['protein'] ?? $r->protein }}g C:{{ $r['carbs'] ?? $r->carbs }}g F:{{ $r['fat'] ?? $r->fat }}g
+                                                @endif
+                                            </small>
+                                        </div>
+                                    @endforeach
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                    <p class="text" style="margin-top:8px; color:#666;">Based on BMI status, conditions and preferences (if set).</p>
+                @endif
             </div>
         </div>
 
@@ -280,26 +463,77 @@
         <div id="section-goals" class="dashboard-container offset" style="display:none;">
             <div class="card span-full">
                 <h2>Goals</h2>
-                @if($goals->isEmpty())
-                    <p class="text">No goals yet. Set your first goal!</p>
+                @if(!$student)
+                    <p class="text">Create a student profile first to set goals.</p>
                 @else
-                    <ul style="list-style:none; padding:0; margin:0; text-align:left;">
-                        @foreach($goals as $goal)
-                            <li style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #f1f1f1;">
-                                <span>
-                                    <strong>{{ ucfirst($goal->goal_type) }}</strong>
-                                    <small style="color:#666"> — target: {{ $goal->target }}</small>
-                                </span>
-                                @if($goal->is_completed)
-                                    <span class="badge" style="background:#4caf50; color:#fff; padding:4px 8px; border-radius:6px;">Completed</span>
-                                @else
-                                    <span class="badge" style="background:#eee; color:#333; padding:4px 8px; border-radius:6px;">In progress</span>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
+                    @if($goals->isEmpty())
+                        <p class="text" style="margin:0 0 12px 0;">No goals yet. Add one below.</p>
+                    @else
+                        <ul style="list-style:none; padding:0; margin:0; text-align:left;">
+                            @foreach($goals as $goal)
+                                @php($pct = $goal->percentage())
+                                <li style="padding:12px 0; border-bottom:1px solid #f1f1f1; display:flex; flex-direction:column; gap:8px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+                                        <span style="flex:1;">
+                                            <strong>{{ ucfirst($goal->goal_type) }}</strong>
+                                            <small style="color:#666">
+                                                @if($goal->target_value)
+                                                    — {{ $goal->current_value }} / {{ $goal->target_value }} {{ $goal->target_unit ?? '' }}
+                                                @else
+                                                    — target: {{ $goal->target }}
+                                                @endif
+                                            </small>
+                                        </span>
+                                        <span class="badge" style="background:{{ $goal->is_completed ? '#4caf50' : '#eee' }}; color:{{ $goal->is_completed ? '#fff' : '#333' }}; padding:4px 8px; border-radius:6px;">
+                                            {{ $goal->is_completed ? 'Completed' : ($pct ? $pct.'%' : 'In progress') }}
+                                        </span>
+                                    </div>
+                                    @if($goal->target_value)
+                                        <div style="background:#eee; border-radius:6px; height:10px; overflow:hidden; position:relative;">
+                                            <div style="background:#4caf50; width:{{ $pct }}%; height:100%; transition:width .4s;"></div>
+                                        </div>
+                                    @endif
+                                    @if($goal->progress->isNotEmpty())
+                                        <div style="display:flex; gap:6px; flex-wrap:wrap; font-size:0.75rem; color:#555;">
+                                            @foreach($goal->progress as $p)
+                                                <span style="background:#f5f5f5; padding:4px 6px; border-radius:4px;">+{{ $p->value }} {{ $goal->target_unit }} <small>{{ $p->recorded_at->format('m/d') }}</small></span>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                                        @if(!$goal->is_completed && $goal->target_value)
+                                            <form method="POST" action="{{ route('goals.update', $goal) }}" style="display:flex; gap:6px; align-items:center;">
+                                                @csrf
+                                                @method('PATCH')
+                                                <input type="number" name="add_progress" min="1" class="form-control" placeholder="Progress" style="width:110px;">
+                                                <button type="submit" class="btn-card">Log</button>
+                                            </form>
+                                        @endif
+                                        @if(!$goal->is_completed)
+                                            <button type="button" class="btn-card" style="background:#4caf50;" onclick="openCompleteGoalModal({{ $goal->id }})">Complete</button>
+                                        @endif
+                                        <button type="button" class="btn-card" style="background:#b71c1c;" onclick="openDeleteGoalModal({{ $goal->id }})">Delete</button>
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    <!-- Inline Add Goal Form -->
+                    <form method="POST" action="{{ route('goals.store') }}" style="margin-top:16px;">
+                        @csrf
+                        <input type="hidden" name="student_id" value="{{ $student->id }}">
+                        <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
+                            <input type="text" name="goal_type" class="form-control" placeholder="Goal type (e.g., Water)" required>
+                            <input type="text" name="target" class="form-control" placeholder="Target description" required>
+                            <input type="number" name="target_value" class="form-control" min="1" placeholder="Target value (e.g., 2000)">
+                            <input type="text" name="target_unit" class="form-control" placeholder="Unit (e.g., ml, min)">
+                            <input type="date" name="due_date" class="form-control" placeholder="Due date">
+                            <div class="form-actions" style="grid-column:1/-1; justify-content:flex-end; margin-top:4px;">
+                                <button type="submit" class="btn-card">Add Goal</button>
+                            </div>
+                        </div>
+                    </form>
                 @endif
-                <a class="btn-card" href="{{ route('goals.index') }}" style="margin-top:12px;">Manage Goals</a>
             </div>
         </div>
 
@@ -471,27 +705,24 @@
                     </div>
                 </div>
 
-                <details style="margin-top:12px;">
-                    <summary style="cursor:pointer;">Optional: body metrics</summary>
-                    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px;">
-                        <div>
-                            <label class="form-label">Height (cm)</label>
-                            <input type="number" step="0.1" name="height" min="0" class="form-control" />
-                        </div>
-                        <div>
-                            <label class="form-label">Weight (kg)</label>
-                            <input type="number" step="0.1" name="weight" min="0" class="form-control" />
-                        </div>
-                        <div>
-                            <label class="form-label">BMI</label>
-                            <input type="number" step="0.1" name="bmi" min="0" class="form-control" />
-                        </div>
-                        <div>
-                            <label class="form-label">Status</label>
-                            <input type="text" name="status" class="form-control" placeholder="e.g., Normal" />
-                        </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px;">
+                    <div>
+                        <label class="form-label">Height (cm)</label>
+                        <input id="modal_height" type="number" step="0.1" name="height" min="0" class="form-control" />
                     </div>
-                </details>
+                    <div>
+                        <label class="form-label">Weight (kg)</label>
+                        <input id="modal_weight" type="number" step="0.1" name="weight" min="0" class="form-control" />
+                    </div>
+                    <div>
+                        <label class="form-label">BMI</label>
+                        <input id="modal_bmi" type="number" step="0.1" name="bmi" min="0" class="form-control" placeholder="Auto-calculated" readonly />
+                    </div>
+                    <div>
+                        <label class="form-label">Status</label>
+                        <input id="modal_status" type="text" name="status" class="form-control" placeholder="Auto-calculated" readonly />
+                    </div>
+                </div>
 
                 <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
                     <button type="button" class="btn-card" style="background:#6c757d;" onclick="closeModal('addIntakeModal')">Cancel</button>
@@ -517,15 +748,59 @@
 
 
     <script>
+        // BMI helpers
+        function getBMIStatus(bmi) {
+            if (isNaN(bmi)) return '';
+            if (bmi < 18.5) return 'Underweight';
+            if (bmi < 25) return 'Normal';
+            if (bmi < 30) return 'Overweight';
+            return 'Obese';
+        }
+
+        function bindBMI(heightId, weightId, bmiId, statusId) {
+            var h = document.getElementById(heightId);
+            var w = document.getElementById(weightId);
+            var b = document.getElementById(bmiId);
+            var s = document.getElementById(statusId);
+            if (!h || !w || !b || !s) return;
+
+            function recalc() {
+                var height = parseFloat(h.value);
+                var weight = parseFloat(w.value);
+                if (height > 0 && weight > 0) {
+                    var m = height / 100;
+                    var bmi = weight / (m * m);
+                    var rounded = Math.round(bmi * 10) / 10;
+                    b.value = rounded;
+                    s.value = getBMIStatus(rounded);
+                } else {
+                    b.value = '';
+                    s.value = '';
+                }
+            }
+
+            h.addEventListener('input', recalc);
+            w.addEventListener('input', recalc);
+            // Initial calculation if values exist
+            recalc();
+        }
+
          function openModal(id) {
-            document.getElementById(id).style.display = 'flex';
+            var modal = document.getElementById(id);
+            if (!modal) return;
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
         function closeModal(id) {
-            document.getElementById(id).style.display = 'none';
+            var modal = document.getElementById(id);
+            if (!modal) return;
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
         }
         window.onclick = function (event) {
             if (event.target.classList.contains('modal')) {
                 event.target.style.display = 'none';
+                document.body.style.overflow = '';
             }
         }
 
@@ -545,6 +820,9 @@
         }
         document.addEventListener('DOMContentLoaded', function() {
             showSection('dashboard');
+            // Bind BMI auto-calc on both forms
+            bindBMI('height','weight','bmi','status');
+            bindBMI('modal_height','modal_weight','modal_bmi','modal_status');
             // Goals chart render
             var ctx = document.getElementById('goalsChart');
             if (ctx && window.Chart) {
@@ -552,7 +830,7 @@
                     new Chart(ctx, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Completed', 'Remaining'],
+                            labels: ['Done', 'Left'],
                             datasets: [{
                                 data: [{{ $goalStats['completed'] }}, {{ max(0, $goalStats['total'] - $goalStats['completed']) }}],
                                 backgroundColor: ['#4caf50', '#e0e0e0'],
@@ -560,7 +838,18 @@
                             }]
                         },
                         options: {
-                            plugins: {legend: {position: 'bottom'}},
+                            responsive: false,
+                            plugins: {
+                                legend: { display: false },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(ctx){
+                                            const full = ctx.label === 'Done' ? 'Completed' : 'Remaining';
+                                            return full + ': ' + ctx.parsed;
+                                        }
+                                    }
+                                }
+                            },
                             cutout: '65%'
                         }
                     });
@@ -572,6 +861,7 @@
         document.addEventListener('keydown', function(e){
             if (e.key === 'Escape') {
                 document.querySelectorAll('.modal').forEach(function(modal){ modal.style.display = 'none'; });
+                document.body.style.overflow = '';
             }
         });
 
@@ -591,8 +881,11 @@
         function closeTipModal(){
             var modal = document.getElementById('tipDetailModal');
             if(modal) modal.style.display='none';
+            document.body.style.overflow = '';
         }
     </script>
+
+
 
     <!-- Tip Detail Modal -->
     <div id="tipDetailModal" class="modal" style="display:none;">

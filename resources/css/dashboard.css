@@ -348,6 +348,17 @@ details.form-details summary {
     max-height: none;
 }
 
+/* Goals card: keep same fixed height as other cards */
+#section-dashboard .card.goals-card {
+    height: 280px;
+    max-height: 280px;
+}
+
+/* When sidebar is collapsed, hide the inline legend to prevent wrapping/overflow */
+.sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.goals-card .mini-legend {
+    display: none;
+}
+
 /* Collapsed sidebar: make action buttons wrap safely without overflow */
 .sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.nutrition-card .card-actions,
 .sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.exercise-card .form-actions {
@@ -365,6 +376,36 @@ details.form-details summary {
 .sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.exercise-card form.quick-add,
 .sidebar.collapsed ~ #section-dashboard.dashboard-container.offset .card.nutrition-card ul {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+
+/* HEALTH SECTION (duplicated tracker cards) ---------------------------------- */
+/* Wrap buttons in exercise card & any card-actions when sidebar collapsed */
+.sidebar.collapsed ~ #section-health.dashboard-container.offset .card.exercise-card .form-actions,
+.sidebar.collapsed ~ #section-health.dashboard-container.offset .card .card-actions {
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.sidebar.collapsed ~ #section-health.dashboard-container.offset .card.exercise-card .form-actions .btn-card,
+.sidebar.collapsed ~ #section-health.dashboard-container.offset .card .card-actions .btn-card {
+    flex: 1 1 120px;
+    min-width: 120px;
+    text-align: center;
+}
+/* Shrink quick-add grids to prevent overflow in collapsed mode */
+.sidebar.collapsed ~ #section-health.dashboard-container.offset .card.exercise-card form.quick-add,
+.sidebar.collapsed ~ #section-health.dashboard-container.offset .card form.quick-add {
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+}
+/* Ensure height auto for dynamic tracker cards in health section */
+#section-health .card.exercise-card { height: auto; max-height: none; }
+/* Keep tracker cards (Water & Exercise) with a comfortable minimum width */
+#section-health .card.health-tracker { min-width: 360px; }
+/* Anchor forms lower as in dashboard for consistency */
+#section-health .card form.quick-add { margin-top: auto; }
+
+/* Keep two stable columns for Health section when sidebar is collapsed */
+.sidebar.collapsed ~ #section-health.dashboard-container.offset {
+    grid-template-columns: repeat(2, minmax(360px, 1fr));
 }
 
 .card:hover {

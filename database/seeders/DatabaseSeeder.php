@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
         UserSeeder::class,
         TipFactory::class,
+        RecipeSeeder::class,
 
 
 

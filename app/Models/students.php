@@ -21,6 +21,9 @@ class students extends Model
         'age',
         'sex',
         'grade_level',
+        'dietary_preferences',
+        'allergies',
+        'conditions',
     ];
 
     // 🔗 Relationships

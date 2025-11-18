@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Models\Tip;
 use App\Models\WaterIntake;
 use App\Models\Exercise;
+use App\Services\RecommendationService;
 
 class DashboardController extends Controller
 {
@@ -38,10 +39,16 @@ class DashboardController extends Controller
             'completed' => 0,
         ];
 
+        // Ensure hydration/exercise variables always exist (avoid undefined when student missing)
+        $waterToday = 0;
+        $recentWater = collect();
+        $exerciseTodayMins = 0;
+        $recentExercises = collect();
+
         if ($student) {
             // All health records ordered latest first
             $healthRecords = $student->healthRecords()->latest('recorded_at')->get();
-            $goals = $student->goals()->latest()->get();
+            $goals = $student->goals()->with(['progress' => function($q){ $q->latest('recorded_at')->take(5); }])->latest()->get();
             $latestRecord = $healthRecords->first();
 
             // Today's nutrition aggregates
@@ -74,6 +81,9 @@ class DashboardController extends Controller
         // Tips: load full list with authors for dashboard Tips section
         $tips = Tip::with('user')->latest('created_at')->get();
 
+        // Smart recommendations
+        $reco = app(RecommendationService::class)->getForStudent($student, 1);
+
         return view('dashboard', compact(
             'user',
             'student',
@@ -86,7 +96,8 @@ class DashboardController extends Controller
             'waterToday',
             'recentWater',
             'exerciseTodayMins',
-            'recentExercises'
+            'recentExercises',
+            'reco'
         ));
     }
 
