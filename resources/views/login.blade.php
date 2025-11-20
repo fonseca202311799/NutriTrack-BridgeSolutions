@@ -16,14 +16,22 @@
 
 
             @if ($errors->any())
-                <div class="error">
-                    <ul>
+                <div id="toast-login-error" style="position:fixed; top:20px; right:20px; z-index:2000; background:#c62828; color:#fff; padding:14px 18px; border-radius:10px; box-shadow:0 6px 18px rgba(0,0,0,0.2); font-weight:600; display:flex; align-items:center; gap:10px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" style="margin-right:8px;"><circle cx="12" cy="12" r="10" stroke="#fff" stroke-width="2" fill="#c62828"/><path stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M8 12h8M12 8v8"/></svg>
+                    <ul style="margin:0; padding:0; list-style:none;">
                         @foreach ($errors->all() as $error)
-                            <li>{{ $error }} </li>
+                            <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
-
+                <script>
+                    document.addEventListener('DOMContentLoaded', function(){
+                        var t = document.getElementById('toast-login-error');
+                        if (t) {
+                            setTimeout(function(){ t.style.display = 'none'; }, 3000);
+                        }
+                    });
+                </script>
             @endif
 
             <label for="email">Email:</label>
