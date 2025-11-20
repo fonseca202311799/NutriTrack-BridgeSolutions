@@ -9,7 +9,7 @@
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-     <link rel="icon" type="image/png" href="{{ asset('images/small_logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/small_logo.png') }}">
     <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
     @vite(['resources/css/landing.css', 'resources/js/landing.js'])
    <script src="https://kit.fontawesome.com/7c33d9b7cf.js" crossorigin="anonymous"></script>
