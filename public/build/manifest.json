@@ -1,4 +1,8 @@
 {
+  "_bootstrap-CLZefdXu.js": {
+    "file": "assets/bootstrap-CLZefdXu.js",
+    "name": "bootstrap"
+  },
   "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff": {
     "file": "assets/bootstrap-icons-BeopsB42.woff",
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff"
@@ -7,8 +11,17 @@
     "file": "assets/bootstrap-icons-mSm7cUeB.woff2",
     "src": "node_modules/bootstrap-icons/font/fonts/bootstrap-icons.woff2"
   },
+  "resources/css/admin.css": {
+    "file": "assets/admin-DUE5ZiwN.css",
+    "src": "resources/css/admin.css",
+    "isEntry": true,
+    "name": "admin",
+    "names": [
+      "admin.css"
+    ]
+  },
   "resources/css/app.css": {
-    "file": "assets/app-Cqti3-EY.css",
+    "file": "assets/app-D3bIeUCe.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -16,18 +29,42 @@
       "app.css"
     ]
   },
+  "resources/css/landing.css": {
+    "file": "assets/landing-aFbZ0yse.css",
+    "src": "resources/css/landing.css",
+    "isEntry": true,
+    "name": "landing",
+    "names": [
+      "landing.css"
+    ]
+  },
   "resources/js/app.js": {
-    "file": "assets/app-D8pi0tEg.js",
+    "file": "assets/app-BpfVT9Ff.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
+    "imports": [
+      "_bootstrap-CLZefdXu.js"
+    ],
     "css": [
       "assets/app-BJIbheU_.css",
-      "assets/app-Cqti3-EY.css"
+      "assets/app-D3bIeUCe.css"
     ],
     "assets": [
       "assets/bootstrap-icons-mSm7cUeB.woff2",
       "assets/bootstrap-icons-BeopsB42.woff"
+    ]
+  },
+  "resources/js/landing.js": {
+    "file": "assets/landing-DreqZID6.js",
+    "name": "landing",
+    "src": "resources/js/landing.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-CLZefdXu.js"
+    ],
+    "css": [
+      "assets/landing-aFbZ0yse.css"
     ]
   }
 }
