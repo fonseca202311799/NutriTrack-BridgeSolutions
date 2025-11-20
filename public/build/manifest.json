@@ -29,6 +29,15 @@
       "app.css"
     ]
   },
+  "resources/css/dashboard.css": {
+    "file": "assets/dashboard-DH4MLRfZ.css",
+    "src": "resources/css/dashboard.css",
+    "isEntry": true,
+    "name": "dashboard",
+    "names": [
+      "dashboard.css"
+    ]
+  },
   "resources/css/landing.css": {
     "file": "assets/landing-aFbZ0yse.css",
     "src": "resources/css/landing.css",
@@ -53,6 +62,18 @@
     "assets": [
       "assets/bootstrap-icons-mSm7cUeB.woff2",
       "assets/bootstrap-icons-BeopsB42.woff"
+    ]
+  },
+  "resources/js/dashboard.js": {
+    "file": "assets/dashboard-CCC6WLte.js",
+    "name": "dashboard",
+    "src": "resources/js/dashboard.js",
+    "isEntry": true,
+    "imports": [
+      "_bootstrap-CLZefdXu.js"
+    ],
+    "css": [
+      "assets/dashboard-DH4MLRfZ.css"
     ]
   },
   "resources/js/landing.js": {

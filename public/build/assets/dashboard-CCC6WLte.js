@@ -1,0 +1,1 @@
+import"./bootstrap-CLZefdXu.js";/* empty css                  */const e=document.querySelector(".sidebar-toggler"),r=document.querySelector(".sidebar");e.addEventListener("click",()=>{r.classList.toggle("collapsed")});
