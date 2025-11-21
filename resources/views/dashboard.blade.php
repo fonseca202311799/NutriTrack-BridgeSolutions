@@ -628,6 +628,18 @@
                         <span>{{ auth()->user()->created_at?->format('M d, Y') }}</span>
                     </div>
                     @if(isset($student))
+                        <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">
+                            <strong style="display:block; font-size:.75rem; letter-spacing:.5px; color:#2a7d2e;">AGE</strong>
+                            <span>{{ $student->age ?? '—' }}</span>
+                        </div>
+                        <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">
+                            <strong style="display:block; font-size:.75rem; letter-spacing:.5px; color:#2a7d2e;">SEX</strong>
+                            <span>{{ $student->sex ?? '—' }}</span>
+                        </div>
+                        <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">
+                            <strong style="display:block; font-size:.75rem; letter-spacing:.5px; color:#2a7d2e;">GRADE LEVEL</strong>
+                            <span>{{ $student->grade_level ?? '—' }}</span>
+                        </div>
                         <form method="POST" action="{{ route('students.update', $student) }}" style="display:flex; flex-direction:column; gap:12px; background:#f9f9f9; padding:12px 14px; border-radius:10px;">
                             @csrf
                             @method('PUT')
@@ -658,10 +670,34 @@
                             </div>
                         </form>
                     @else
-                        <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">
-                            <p class="text" style="margin:0 0 10px;">No student profile yet.</p>
-                            <a class="btn-card" href="{{ route('students.create') }}">Create Profile</a>
-                        </div>
+                        <form method="POST" action="{{ route('students.store') }}" style="display:flex; flex-direction:column; gap:12px; background:#f9f9f9; padding:12px 14px; border-radius:10px;">
+                            @csrf
+                            <input type="hidden" name="redirect_to" value="dashboard" />
+                            <strong style="display:block; font-size:.85rem; letter-spacing:.5px; color:#2a7d2e;">CREATE STUDENT PROFILE</strong>
+                            <div class="form-group">
+                                <label class="form-label" for="new_age">Age</label>
+                                <input id="new_age" type="number" min="1" name="age" class="form-control" value="{{ old('age') }}" placeholder="e.g., 17" />
+                                @error('age')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="new_sex">Sex</label>
+                                <select id="new_sex" name="sex" class="form-control">
+                                    <option value="" {{ old('sex') === null ? 'selected' : '' }}>Select...</option>
+                                    <option value="male" {{ old('sex') === 'male' ? 'selected' : '' }}>Male</option>
+                                    <option value="female" {{ old('sex') === 'female' ? 'selected' : '' }}>Female</option>
+                                    <option value="other" {{ old('sex') === 'other' ? 'selected' : '' }}>Other</option>
+                                </select>
+                                @error('sex')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="new_grade">Grade Level</label>
+                                <input id="new_grade" type="text" name="grade_level" class="form-control" value="{{ old('grade_level') }}" placeholder="e.g., Grade 10" />
+                                @error('grade_level')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                            </div>
+                            <div class="form-actions" style="justify-content:flex-start;">
+                                <button type="submit" class="btn-card">Create Profile</button>
+                            </div>
+                        </form>
                     @endif
                     @if(isset($latestRecord))
                         <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">

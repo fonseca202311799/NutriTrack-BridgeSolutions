@@ -6,6 +6,7 @@ use App\Models\students;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class StudentsController extends Controller
 {
@@ -38,15 +39,31 @@ class StudentsController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    { $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'student_id' => 'required|string|unique:students,student_id',
+    {
+        // Self-service creation: only capture profile attributes; user & generated student_id are automatic
+        $validated = $request->validate([
             'age' => 'nullable|integer|min:1',
             'sex' => 'nullable|string|max:10',
             'grade_level' => 'nullable|string|max:255',
         ]);
 
-        students::create($validated);
+        // Generate a unique student identifier
+        do {
+            $generatedId = 'STU-' . Str::upper(Str::random(6));
+        } while (students::where('student_id', $generatedId)->exists());
+
+        $student = students::create([
+            'user_id' => Auth::id(),
+            'student_id' => $generatedId,
+            'age' => $validated['age'] ?? null,
+            'sex' => $validated['sex'] ?? null,
+            'grade_level' => $validated['grade_level'] ?? null,
+        ]);
+
+        if ($request->filled('redirect_to') && $request->input('redirect_to') === 'dashboard') {
+            return redirect()->route('dashboard')->with('success', 'Profile created successfully!');
+        }
+
         return redirect()->route('students.index')->with('success', 'Student added successfully!');
     }
 
