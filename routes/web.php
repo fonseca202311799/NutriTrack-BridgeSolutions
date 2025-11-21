@@ -24,11 +24,8 @@ Route::get('/', function () {
 })->name('welcome');
 
 Route::get('login', function() {
-    if (Auth::check()) {
-        return redirect()->route('dashboard');
-    }
     return view('login');
-})->name('login');
+})->middleware('guest')->name('login');
 
 Route::post('login', LoginController::class)->middleware('throttle:5,1')->name('login.attempt');
 
@@ -43,11 +40,11 @@ Route::post('logout', function () {
     return redirect('login');
 })->name('logout');
 
-Route::view('register', 'register')->name('register');
+Route::view('register', 'register')->middleware('guest')->name('register');
 Route::post('register', RegisterController::class)->middleware('auth')->name('register.store');
 
 
-Route::middleware(['auth', \App\Http\Middleware\PreventBackHistory::class])->group(function () {
+Route::middleware(['auth'])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class)->except(['show', 'edit', 'update']);
     Route::resource('health-records', HealthRecordsController::class);
