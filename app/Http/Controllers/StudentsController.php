@@ -111,4 +111,11 @@ class StudentsController extends Controller
         $student->delete();
         return redirect()->route('students.index')->with('success', 'Student deleted successfully!');
     }
+
+    // API: list students with linked user info
+    public function apiList()
+    {
+        $students = \App\Models\students::with('user')->get();
+        return response()->json($students);
+    }
 }

@@ -78,8 +78,21 @@ class DashboardController extends Controller
             $recentExercises = Exercise::where('student_id', $student->id)->latest('recorded_at')->take(5)->get();
         }
 
-        // Tips: load full list with authors for dashboard Tips section
-        $tips = Tip::with('user')->latest('created_at')->get();
+        // Tips: students see only admin-sent tips (optionally personalized to them); admins see all
+        if ($user->role === 'admin') {
+            $tips = Tip::with('user')->latest('created_at')->get();
+        } else {
+            $tips = Tip::with('user')
+                ->whereHas('user', function ($q) { $q->where('role', 'admin'); })
+                ->when($student, function ($q) use ($student) {
+                    $q->where('student_id', $student->id);
+                }, function ($q) {
+                    // No student profile: show none (only personalized tips are allowed)
+                    $q->whereRaw('1 = 0');
+                })
+                ->latest('created_at')
+                ->get();
+        }
 
         // Smart recommendations
         $reco = app(RecommendationService::class)->getForStudent($student, 1);

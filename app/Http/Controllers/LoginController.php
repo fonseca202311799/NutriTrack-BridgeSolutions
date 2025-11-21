@@ -27,8 +27,9 @@ class LoginController extends Controller
             return redirect()->route('dashboard')->with('login_success', 'Successfully logged in. Welcome back!');
         }
 
-        return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
-        ])->onlyInput('email');
+        return back()
+            ->withErrors(['email' => 'The provided credentials do not match our records.'])
+            ->with('error', 'Login failed: The provided credentials do not match our records.')
+            ->onlyInput('email');
     }
 }

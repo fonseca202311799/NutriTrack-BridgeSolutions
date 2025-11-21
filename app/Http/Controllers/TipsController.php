@@ -10,25 +10,37 @@ class TipsController extends Controller
 {
     public function index()
     {
-        $tips = Tip::with('user')->get();
+        $user = Auth::user();
+        if ($user->role === 'admin') {
+            $tips = Tip::with(['user', 'student'])->get();
+        } else {
+            $student = \App\Models\students::where('user_id', $user->id)->first();
+            $tips = Tip::with(['user', 'student'])
+                ->where(function($q) use ($student) {
+                    $q->whereNull('student_id');
+                    if ($student) $q->orWhere('student_id', $student->id);
+                })->get();
+        }
         return view('tips.index', compact('tips'));
     }
 
     public function create()
     {
-        return view('tips.create');
+        if (Auth::user()->role !== 'admin') abort(403);
+        $students = \App\Models\students::with('user')->get();
+        return view('tips.create', compact('students'));
     }
 
     public function store(Request $request)
     {
+        if (Auth::user()->role !== 'admin') abort(403);
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
             'category' => 'nullable|string|max:255',
+            'student_id' => 'nullable|exists:students,id',
         ]);
-
         $validated['created_by'] = Auth::id();
-
         Tip::create($validated);
         return redirect()->route('tips.index')->with('success', 'Tip added successfully!');
     }

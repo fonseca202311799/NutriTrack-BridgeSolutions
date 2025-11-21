@@ -21,4 +21,8 @@ class Tip extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+        public function student()
+        {
+            return $this->belongsTo(\App\Models\students::class, 'student_id');
+        }
 }
