@@ -11,6 +11,7 @@ use App\Models\Tip;
 use App\Models\WaterIntake;
 use App\Models\Exercise;
 use App\Services\RecommendationService;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardController extends Controller
 {
@@ -79,19 +80,24 @@ class DashboardController extends Controller
         }
 
         // Tips: students see only admin-sent tips (optionally personalized to them); admins see all
+        $adminTipsQuery = Tip::with('user')->whereHas('user', function ($q) { $q->where('role', 'admin'); });
         if ($user->role === 'admin') {
-            $tips = Tip::with('user')->latest('created_at')->get();
+            $tips = (clone $adminTipsQuery)->latest('created_at')->get();
         } else {
-            $tips = Tip::with('user')
-                ->whereHas('user', function ($q) { $q->where('role', 'admin'); })
-                ->when($student, function ($q) use ($student) {
-                    $q->where('student_id', $student->id);
-                }, function ($q) {
-                    // No student profile: show none (only personalized tips are allowed)
-                    $q->whereRaw('1 = 0');
-                })
-                ->latest('created_at')
-                ->get();
+            if ($student) {
+                if (Schema::hasColumn('tips', 'student_id')) {
+                    $tips = (clone $adminTipsQuery)
+                        ->where('student_id', $student->id)
+                        ->latest('created_at')
+                        ->get();
+                } else {
+                    // Column not present yet (migration not run); avoid crashing and show none
+                    $tips = collect();
+                }
+            } else {
+                // No student profile: only personalized tips are allowed (none)
+                $tips = collect();
+            }
         }
 
         // Smart recommendations
