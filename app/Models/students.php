@@ -9,6 +9,7 @@ use App\Models\health_records;
 use App\Models\goals;
 use App\Models\WaterIntake;
 use App\Models\Exercise;
+use Carbon\Carbon;
 
 
 class students extends Model
@@ -19,11 +20,16 @@ class students extends Model
         'user_id',
         'student_id',
         'age',
+        'birth_date',
         'sex',
         'grade_level',
         'dietary_preferences',
         'allergies',
         'conditions',
+    ];
+
+    protected $casts = [
+        'birth_date' => 'date',
     ];
 
     // 🔗 Relationships
@@ -50,5 +56,23 @@ class students extends Model
     public function exercises()
     {
         return $this->hasMany(Exercise::class, 'student_id');
+    }
+
+    public function getAgeAttribute()
+    {
+        if ($this->birth_date instanceof \Illuminate\Support\Carbon) {
+            $dob = $this->birth_date;
+        } elseif ($this->birth_date) {
+            try {
+                $dob = Carbon::parse($this->birth_date);
+            } catch (\Throwable $e) {
+                return null;
+            }
+        } else {
+            return null;
+        }
+
+        $today = Carbon::today();
+        return $dob->diffInYears($today);
     }
 }

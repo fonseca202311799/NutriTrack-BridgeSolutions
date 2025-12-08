@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\students;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Redirect;
 
 class GoalsController extends Controller
 {
@@ -75,6 +76,16 @@ class GoalsController extends Controller
             return back()->with('success', 'Progress updated!');
         }
 
+        // If marking as completed, snap current_value to target_value (when defined)
+        if (array_key_exists('is_completed', $validated) && (bool)$validated['is_completed'] === true) {
+            if ($goal->target_value) {
+                $goal->current_value = $goal->target_value;
+            }
+            $goal->is_completed = true;
+            $goal->save();
+            return back()->with('success', 'Goal marked as completed!');
+        }
+
         $goal->update($validated);
         return back()->with('success', 'Goal updated successfully!');
     }
@@ -83,6 +94,13 @@ class GoalsController extends Controller
     {
         $goal->delete();
         return back()->with('success', 'Goal deleted successfully!');
+    }
+
+    public function restore($id)
+    {
+        $goal = goals::withTrashed()->findOrFail($id);
+        $goal->restore();
+        return Redirect::back()->with('success', 'Goal restored successfully!');
     }
 
     // Admin: list all students' goals for admin dashboard (JSON)

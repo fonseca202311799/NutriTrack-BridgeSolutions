@@ -203,6 +203,74 @@
                     <strong>{{ $nutritionToday['fat'] }}</strong><br><small>Fat (g)</small>
                 </li>
             </ul>
+            <!-- Macro Split Donut + Targets vs Actual -->
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px; align-items:center; margin-top:12px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
+                    <canvas id="macroChart" width="120" height="120"></canvas>
+                    <div style="display:flex; gap:10px; font-size:.8rem; color:#555; flex-wrap:wrap; justify-content:center;">
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;background:#1e88e5;border-radius:2px;display:inline-block;"></span>Protein</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;background:#43a047;border-radius:2px;display:inline-block;"></span>Carbs</span>
+                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;background:#fb8c00;border-radius:2px;display:inline-block;"></span>Fat</span>
+                    </div>
+                </div>
+                <div>
+                    @php
+                        $calTarget = (int)($dailyTargets['calories'] ?? 0);
+                        $pTarget = (int)($dailyTargets['protein'] ?? 0);
+                        $cTarget = (int)($dailyTargets['carbs'] ?? 0);
+                        $fTarget = (int)($dailyTargets['fat'] ?? 0);
+                        $pct = function($val, $target){ return $target > 0 ? min(100, round(($val/$target)*100)) : null; };
+                        $bar = function($val, $target){
+                            if ($target <= 0) return ['w'=>0,'bg'=>'#e0e0e0'];
+                            $pct = ($val / $target) * 100;
+                            $color = $pct <= 100 ? '#4caf50' : ($pct <= 120 ? '#f9a825' : '#c62828');
+                            return ['w'=>min(100, round($pct)), 'bg'=>$color];
+                        };
+                        $calBar = $bar($nutritionToday['calories'], $calTarget);
+                        $pBar = $bar($nutritionToday['protein'], $pTarget);
+                        $cBar = $bar($nutritionToday['carbs'], $cTarget);
+                        $fBar = $bar($nutritionToday['fat'], $fTarget);
+                    @endphp
+                    <div style="display:grid; gap:10px;">
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                                <span>Calories</span>
+                                <span>{{ $nutritionToday['calories'] }} / {{ $calTarget }} kcal</span>
+                            </div>
+                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                                <div style="height:100%; width:{{ $calBar['w'] }}%; background:{{ $calBar['bg'] }};"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                                <span>Protein</span>
+                                <span>{{ $nutritionToday['protein'] }} / {{ $pTarget }} g</span>
+                            </div>
+                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                                <div style="height:100%; width:{{ $pBar['w'] }}%; background:{{ $pBar['bg'] }};"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                                <span>Carbs</span>
+                                <span>{{ $nutritionToday['carbs'] }} / {{ $cTarget }} g</span>
+                            </div>
+                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                                <div style="height:100%; width:{{ $cBar['w'] }}%; background:{{ $cBar['bg'] }};"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                                <span>Fat</span>
+                                <span>{{ $nutritionToday['fat'] }} / {{ $fTarget }} g</span>
+                            </div>
+                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                                <div style="height:100%; width:{{ $fBar['w'] }}%; background:{{ $fBar['bg'] }};"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div class="card-actions" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
                 <button class="btn-card" type="button" onclick="openModal('addIntakeModal')">Add Intake</button>
             </div>
@@ -210,15 +278,114 @@
 
         <!-- Health Status -->
         <div class="card">
-            <h2>Health Status</h2>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                <h2 style="margin:0;">Health Status</h2>
+            </div>
+
             @if($latestRecord)
-                <p class="text" style="margin:0;">BMI: <strong>{{ $latestRecord->bmi ?? '—' }}</strong></p>
-                <p class="text" style="margin:0;">Status: <strong>{{ $latestRecord->status ?? '—' }}</strong></p>
-                <p class="text" style="margin:0;">Height: <strong>{{ $latestRecord->height ?? '—' }} cm</strong></p>
-                <p class="text" style="margin:0;">Weight: <strong>{{ $latestRecord->weight ?? '—' }} kg</strong></p>
-                <p class="text" style="margin:0;">Last Update: <strong>{{ optional($latestRecord->recorded_at)->format('M d, Y') }}</strong></p>
+                @php
+                    $bmi = $latestRecord->bmi;
+                    $statusLabel = $latestRecord->status ?? null;
+                    if (!$statusLabel && $bmi) {
+                        if ($bmi < 18.5) $statusLabel = 'Underweight';
+                        elseif ($bmi < 25) $statusLabel = 'Normal';
+                        elseif ($bmi < 30) $statusLabel = 'Overweight';
+                        else $statusLabel = 'Obese';
+                    }
+                    $color = '#9e9e9e';
+                    if ($statusLabel === 'Underweight') $color = '#f57c00';
+                    elseif ($statusLabel === 'Normal') $color = '#2e7d32';
+                    elseif ($statusLabel === 'Overweight') $color = '#f9a825';
+                    elseif ($statusLabel === 'Obese') $color = '#c62828';
+
+                    // Percent positions for segments and marker based on BMI 16–40 range
+                    $uwEnd = round(((18.5 - 16) / 24) * 100, 1);
+                    $normalEnd = round(((25 - 16) / 24) * 100, 1);
+                    $overEnd = round(((30 - 16) / 24) * 100, 1);
+                    $marker = null;
+                    if (!is_null($bmi)) {
+                        $marker = max(0, min(100, round((($bmi - 16) / 24) * 100)));
+                    }
+                @endphp
+
+                <div style="display:grid; grid-template-columns:1fr; gap:10px; margin-top:8px;">
+                    <!-- BMI and Status Row -->
+                    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                        <div style="display:flex; align-items:baseline; gap:8px;">
+                            <span style="font-size:1.8rem; font-weight:700; color:#2a2a2a;">{{ $bmi ?? '—' }}</span>
+                            <small class="text" style="color:#666;">BMI</small>
+                        </div>
+                        <span class="badge" style="background:{{ $color }}; color:#fff; padding:4px 10px; border-radius:999px; font-size:.8rem;">{{ $statusLabel ?? 'No Status' }}</span>
+                    </div>
+
+                    <!-- BMI Scale -->
+                    <div>
+                        <div style="position:relative; height:12px; border-radius:8px; overflow:hidden; background: linear-gradient(to right,
+                            #f57c00 0% {{ $uwEnd }}%,
+                            #2e7d32 {{ $uwEnd }}% {{ $normalEnd }}%,
+                            #f9a825 {{ $normalEnd }}% {{ $overEnd }}%,
+                            #c62828 {{ $overEnd }}% 100%);">
+                        </div>
+                        @if(!is_null($marker))
+                            <div style="position:relative; height:0;">
+                                <div style="position:absolute; top:-9px; left:{{ $marker }}%; transform:translateX(-50%); width:0; height:0; border-left:6px solid transparent; border-right:6px solid transparent; border-top:10px solid {{ $color }};"></div>
+                            </div>
+                        @endif
+                        <div style="display:flex; justify-content:space-between; font-size:.75rem; color:#777; margin-top:4px;">
+                            <span>16</span>
+                            <span>18.5</span>
+                            <span>25</span>
+                            <span>30</span>
+                            <span>40</span>
+                        </div>
+                        <!-- BMI Legend -->
+                        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:8px; font-size:.8rem; color:#555;">
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span aria-label="Underweight" title="Underweight" style="width:10px; height:10px; background:#f57c00; border-radius:2px; display:inline-block;"></span>
+                                Underweight
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span aria-label="Normal" title="Normal" style="width:10px; height:10px; background:#2e7d32; border-radius:2px; display:inline-block;"></span>
+                                Normal
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span aria-label="Overweight" title="Overweight" style="width:10px; height:10px; background:#f9a825; border-radius:2px; display:inline-block;"></span>
+                                Overweight
+                            </span>
+                            <span style="display:inline-flex; align-items:center; gap:6px;">
+                                <span aria-label="Obese" title="Obese" style="width:10px; height:10px; background:#c62828; border-radius:2px; display:inline-block;"></span>
+                                Obese
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Metrics Grid -->
+                    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:10px;">
+                        <div style="background:#f8f9fa; padding:10px; border-radius:8px; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-ruler" style="color:#607d8b;"></i>
+                            <div>
+                                <div style="font-size:.75rem; color:#607d8b;">Height</div>
+                                <div style="font-weight:600;">{{ $latestRecord->height !== null ? $latestRecord->height.' cm' : '—' }}</div>
+                            </div>
+                        </div>
+                        <div style="background:#f8f9fa; padding:10px; border-radius:8px; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-weight-scale" style="color:#607d8b;"></i>
+                            <div>
+                                <div style="font-size:.75rem; color:#607d8b;">Weight</div>
+                                <div style="font-weight:600;">{{ $latestRecord->weight !== null ? $latestRecord->weight.' kg' : '—' }}</div>
+                            </div>
+                        </div>
+                        <div style="background:#f8f9fa; padding:10px; border-radius:8px; display:flex; align-items:center; gap:8px;">
+                            <i class="fa-solid fa-calendar-day" style="color:#607d8b;"></i>
+                            <div>
+                                <div style="font-size:.75rem; color:#607d8b;">Last Update</div>
+                                <div style="font-weight:600;">{{ optional($latestRecord->recorded_at)->format('M d, Y') ?? '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             @else
-                <p class="text">No health records yet.</p>
+                <p class="text" style="margin:0;">No health records yet.</p>
             @endif
         </div>
 
@@ -319,7 +486,7 @@
                 </p>
 
                 <h3 style="margin-top:12px;">Add Daily Intake</h3>
-                <form method="POST" action="{{ route('health-records.store') }}">
+                <form method="POST" action="{{ route('health-records.store') }}" class="daily-intake-form">
                     @csrf
                     <input type="hidden" name="redirect_to" value="dashboard">
 
@@ -342,7 +509,7 @@
                         </div>
                         <div class="form-group">
                             <label class="form-label" for="recorded_at">Recorded at</label>
-                            <input id="recorded_at" type="date" name="recorded_at" class="form-control" />
+                            <input id="recorded_at" type="date" name="recorded_at" class="form-control" required />
                         </div>
                     </div>
 
@@ -471,6 +638,9 @@
                 @if(!$student)
                     <p class="text">Create a student profile first to set goals.</p>
                 @else
+                    <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end; margin-bottom:10px;">
+                        <button type="button" class="btn-card" onclick="openModal('archivedGoalsModal')">Archived Goals</button>
+                    </div>
                     @if($goals->isEmpty())
                         <p class="text" style="margin:0 0 12px 0;">No goals yet. Add one below.</p>
                     @else
@@ -630,7 +800,7 @@
                     @if(isset($student))
                         <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">
                             <strong style="display:block; font-size:.75rem; letter-spacing:.5px; color:#2a7d2e;">AGE</strong>
-                            <span>{{ $student->age ?? '—' }}</span>
+                            <span>{{ $student->age !== null ? (int)$student->age : '—' }}</span>
                         </div>
                         <div style="background:#f9f9f9; padding:12px 14px; border-radius:10px;">
                             <strong style="display:block; font-size:.75rem; letter-spacing:.5px; color:#2a7d2e;">SEX</strong>
@@ -640,44 +810,19 @@
                             <strong style="display:block; font-size:.75rem; letter-spacing:.5px; color:#2a7d2e;">GRADE LEVEL</strong>
                             <span>{{ $student->grade_level ?? '—' }}</span>
                         </div>
-                        <form method="POST" action="{{ route('students.update', $student) }}" style="display:flex; flex-direction:column; gap:12px; background:#f9f9f9; padding:12px 14px; border-radius:10px;">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="redirect_to" value="dashboard" />
-                            <strong style="display:block; font-size:.85rem; letter-spacing:.5px; color:#2a7d2e;">EDIT STUDENT DETAILS</strong>
-                            <div class="form-group">
-                                <label class="form-label" for="profile_age">Age</label>
-                                <input id="profile_age" type="number" min="1" name="age" class="form-control" value="{{ old('age', $student->age) }}" placeholder="e.g., 17" />
-                                @error('age')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="profile_sex">Sex</label>
-                                <select id="profile_sex" name="sex" class="form-control">
-                                    <option value="" {{ old('sex', $student->sex) === null ? 'selected' : '' }}>Select...</option>
-                                    <option value="male" {{ old('sex', strtolower((string)$student->sex)) === 'male' ? 'selected' : '' }}>Male</option>
-                                    <option value="female" {{ old('sex', strtolower((string)$student->sex)) === 'female' ? 'selected' : '' }}>Female</option>
-                                    <option value="other" {{ old('sex', strtolower((string)$student->sex)) === 'other' ? 'selected' : '' }}>Other</option>
-                                </select>
-                                @error('sex')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label" for="profile_grade">Grade Level</label>
-                                <input id="profile_grade" type="text" name="grade_level" class="form-control" value="{{ old('grade_level', $student->grade_level) }}" placeholder="e.g., Grade 10" />
-                                @error('grade_level')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
-                            </div>
-                            <div class="form-actions" style="justify-content:flex-start;">
-                                <button type="submit" class="btn-card">Save Changes</button>
-                            </div>
-                        </form>
+                        <div style="display:flex; gap:10px;">
+                            <button type="button" class="btn-card" onclick="openModal('editStudentModal')">Edit Student Details</button>
+                        </div>
                     @else
                         <form method="POST" action="{{ route('students.store') }}" style="display:flex; flex-direction:column; gap:12px; background:#f9f9f9; padding:12px 14px; border-radius:10px;">
                             @csrf
                             <input type="hidden" name="redirect_to" value="dashboard" />
                             <strong style="display:block; font-size:.85rem; letter-spacing:.5px; color:#2a7d2e;">CREATE STUDENT PROFILE</strong>
                             <div class="form-group">
-                                <label class="form-label" for="new_age">Age</label>
-                                <input id="new_age" type="number" min="1" name="age" class="form-control" value="{{ old('age') }}" placeholder="e.g., 17" />
-                                @error('age')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                                <label class="form-label" for="new_birth_date">Birth Date</label>
+                                <input id="new_birth_date" type="date" name="birth_date" class="form-control" value="{{ old('birth_date') }}" />
+                                <small class="text" style="color:#666;">Age: <span id="new_age_preview">—</span></small>
+                                @error('birth_date')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                             </div>
                             <div class="form-group">
                                 <label class="form-label" for="new_sex">Sex</label>
@@ -711,13 +856,101 @@
         </div>
     </div>
 
+    <!-- Edit Student Modal -->
+    @if(isset($student))
+    <div id="editStudentModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:520px;">
+            <span class="close" onclick="closeModal('editStudentModal')">&times;</span>
+            <h2 style="margin-top:0; color:#2a7d2e;">Edit Student Details</h2>
+            <form method="POST" action="{{ route('students.update', $student) }}">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="redirect_to" value="dashboard" />
+                <div class="form-group">
+                    <label class="form-label" for="edit_birth_date">Birth Date</label>
+                    <input id="edit_birth_date" type="date" name="birth_date" class="form-control" value="{{ old('birth_date', optional($student->birth_date)->format('Y-m-d')) }}" />
+                    <small class="text" style="color:#666;">Age: <span id="edit_age_preview">{{ $student->age ?? '—' }}</span></small>
+                    @error('birth_date')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit_sex">Sex</label>
+                    <select id="edit_sex" name="sex" class="form-control">
+                        <option value="" {{ old('sex', $student->sex) === null ? 'selected' : '' }}>Select...</option>
+                        <option value="male" {{ old('sex', strtolower((string)$student->sex)) === 'male' ? 'selected' : '' }}>Male</option>
+                        <option value="female" {{ old('sex', strtolower((string)$student->sex)) === 'female' ? 'selected' : '' }}>Female</option>
+                        <option value="other" {{ old('sex', strtolower((string)$student->sex)) === 'other' ? 'selected' : '' }}>Other</option>
+                    </select>
+                    @error('sex')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit_grade">Grade Level</label>
+                    <input id="edit_grade" type="text" name="grade_level" class="form-control" value="{{ old('grade_level', $student->grade_level) }}" placeholder="e.g., Grade 10" />
+                    @error('grade_level')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                </div>
+                <div style="margin-top:16px; display:flex; gap:10px; justify-content:flex-end;">
+                    <button type="button" class="btn-card" style="background:#6c757d;" onclick="closeModal('editStudentModal')">Cancel</button>
+                    <button type="submit" class="btn-card">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endif
+
+    <!-- Archived Goals Modal -->
+    <div id="archivedGoalsModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:720px; width:95%;">
+            <span class="close" onclick="closeModal('archivedGoalsModal')">&times;</span>
+            <h2 style="margin-top:0; color:#2a7d2e;">Archived Goals</h2>
+            <p class="text" style="margin:6px 0 12px; color:#666;">Soft-deleted goals. Restore any item to bring it back.</p>
+
+            <div style="background:#f9f9f9; border:1px solid #f1f1f1; border-radius:10px; overflow:hidden;">
+                @isset($archivedGoals)
+                    @if($archivedGoals->isEmpty())
+                        <div style="padding:16px; text-align:center; color:#666;">No archived goals.</div>
+                    @else
+                        <div style="display:grid; grid-template-columns:1fr auto; gap:0;">
+                            @foreach($archivedGoals as $g)
+                                <div style="display:flex; flex-direction:column; gap:4px; padding:12px 14px; border-bottom:1px solid #f1f1f1;">
+                                    <div style="display:flex; align-items:center; gap:8px;">
+                                        <strong style="color:#2a7d2e;">{{ ucfirst($g->goal_type) }}</strong>
+                                        <span class="badge" style="background:#eee; color:#333; padding:2px 6px; border-radius:6px; font-size:.75rem;">Archived</span>
+                                    </div>
+                                    <div class="text" style="color:#555;">
+                                        @if($g->target_value)
+                                            {{ $g->current_value }} / {{ $g->target_value }} {{ $g->target_unit ?? '' }}
+                                        @else
+                                            target: {{ $g->target }}
+                                        @endif
+                                    </div>
+                                    <small style="color:#888;">Archived: {{ optional($g->deleted_at)->format('M d, Y H:i') }}</small>
+                                </div>
+                                <div style="display:flex; align-items:center; justify-content:center; padding:12px 14px; border-bottom:1px solid #f1f1f1;">
+                                    <form method="POST" action="{{ route('goals.restore', ['id' => $g->id]) }}">
+                                        @csrf
+                                        <button type="submit" class="btn-card">Restore</button>
+                                    </form>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                @else
+                    <div style="padding:16px; text-align:center; color:#666;">No archive data available.</div>
+                @endisset
+            </div>
+
+            <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
+                <button type="button" class="btn-card" style="background:#6c757d;" onclick="closeModal('archivedGoalsModal')">Close</button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Add Intake Modal (moved outside list/condition so it always exists) -->
     <div id="addIntakeModal" class="modal" style="display:none;">
         <div class="modal-content">
             <span class="close" onclick="closeModal('addIntakeModal')">&times;</span>
             <h2 style="margin-top:0;">Add Daily Intake</h2>
-            <form method="POST" action="{{ route('health-records.store') }}">
+            <form method="POST" action="{{ route('health-records.store') }}" class="daily-intake-form">
                 @csrf
                 <input type="hidden" name="redirect_to" value="dashboard">
 
@@ -741,7 +974,7 @@
                     </div>
                     <div>
                         <label class="form-label">Recorded at</label>
-                        <input type="date" name="recorded_at" class="form-control" required />
+                        <input id="modal_recorded_at" type="date" name="recorded_at" class="form-control" required />
                         @error('recorded_at')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                     </div>
                 </div>
@@ -872,6 +1105,85 @@
             // Bind BMI auto-calc on both forms
             bindBMI('height','weight','bmi','status');
             bindBMI('modal_height','modal_weight','modal_bmi','modal_status');
+            // Default intake dates to today if empty
+            try {
+                var todayStr = new Date().toISOString().slice(0,10);
+                var rec = document.getElementById('recorded_at');
+                if (rec && !rec.value) rec.value = todayStr;
+                var mrec = document.getElementById('modal_recorded_at');
+                if (mrec && !mrec.value) mrec.value = todayStr;
+            } catch(e) {}
+            // Client-side intake validation: at least one macro > 0
+            document.querySelectorAll('form.daily-intake-form').forEach(function(f){
+                f.addEventListener('submit', function(ev){
+                    var cal = parseInt(f.querySelector('[name="calories"]').value || '0', 10);
+                    var p = parseInt(f.querySelector('[name="protein"]').value || '0', 10);
+                    var c = parseInt(f.querySelector('[name="carbs"]').value || '0', 10);
+                    var fat = parseInt(f.querySelector('[name="fat"]').value || '0', 10);
+                    if ((cal + p + c + fat) === 0) {
+                        ev.preventDefault();
+                        alert('Provide at least one of calories, protein, carbs, or fat.');
+                        var first = f.querySelector('[name="calories"]');
+                        if (first) first.focus();
+                    }
+                });
+            });
+            // Macro donut chart
+            (function(){
+                var el = document.getElementById('macroChart');
+                if (!el || !window.Chart) return;
+                try {
+                    var protein = {{ (int)$nutritionToday['protein'] }};
+                    var carbs = {{ (int)$nutritionToday['carbs'] }};
+                    var fat = {{ (int)$nutritionToday['fat'] }};
+                    var total = Math.max(0, protein + carbs + fat);
+                    if (total === 0) {
+                        // render empty ring
+                        new Chart(el, {
+                            type: 'doughnut',
+                            data: { datasets: [{ data: [1], backgroundColor:['#e0e0e0'], borderWidth:0 }]},
+                            options: { plugins:{ legend:{display:false}}, cutout:'65%', responsive:false }
+                        });
+                        return;
+                    }
+                    new Chart(el, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Protein','Carbs','Fat'],
+                            datasets: [{
+                                data: [protein, carbs, fat],
+                                backgroundColor: ['#1e88e5', '#43a047', '#fb8c00'],
+                                borderWidth: 0
+                            }]
+                        },
+                        options: { plugins:{ legend:{display:false}}, cutout:'65%', responsive:false }
+                    });
+                } catch(e) { /* noop */ }
+            })();
+            // Live age preview from DOB
+            function computeAge(isoDate){
+                if(!isoDate) return '';
+                var dob = new Date(isoDate);
+                if(isNaN(dob.getTime())) return '';
+                var now = new Date();
+                var diffMs = now - dob;
+                var years = diffMs / (1000 * 60 * 60 * 24 * 365.2425);
+                return Math.floor(years);
+            }
+            var newDob = document.getElementById('new_birth_date');
+            var newAge = document.getElementById('new_age_preview');
+            if(newDob && newAge){
+                var updateNewAge = function(){ newAge.textContent = computeAge(newDob.value) || '—'; };
+                newDob.addEventListener('input', updateNewAge);
+                updateNewAge();
+            }
+            var editDob = document.getElementById('edit_birth_date');
+            var editAge = document.getElementById('edit_age_preview');
+            if(editDob && editAge){
+                var updateEditAge = function(){ editAge.textContent = computeAge(editDob.value) || '—'; };
+                editDob.addEventListener('input', updateEditAge);
+                updateEditAge();
+            }
             // Goals chart render
             var ctx = document.getElementById('goalsChart');
             if (ctx && window.Chart) {

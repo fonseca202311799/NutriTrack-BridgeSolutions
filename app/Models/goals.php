@@ -4,11 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\students;
 
 class goals extends Model
 {
-     use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'student_id',
@@ -24,7 +25,7 @@ class goals extends Model
     // 🔗 Relationships
     public function student()
     {
-        return $this->belongsTo(students::class);
+        return $this->belongsTo(students::class, 'student_id');
     }
 
     public function progress()

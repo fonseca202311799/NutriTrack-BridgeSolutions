@@ -27,11 +27,13 @@
 
             @endif
             <label for="name">Name:</label>
-            <input type="text" name="name" placeholder="Name" />
+            <input type="text" name="name" placeholder="Name" required maxlength="255" />
             <label for="email">Email:</label>
-            <input type="email" name="email" placeholder="Email" />
+            <input type="email" name="email" placeholder="Email" required maxlength="255" />
             <label for="password">Password:</label>
-            <input type="password" name="password" placeholder="Password" />
+            <input type="password" name="password" placeholder="Password" required minlength="8" />
+            <label for="password_confirmation">Confirm Password:</label>
+            <input type="password" name="password_confirmation" placeholder="Confirm Password" required minlength="8" />
 
             <button type="submit">Register</button>
 

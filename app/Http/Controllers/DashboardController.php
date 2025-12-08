@@ -12,6 +12,7 @@ use App\Models\WaterIntake;
 use App\Models\Exercise;
 use App\Services\RecommendationService;
 use Illuminate\Support\Facades\Schema;
+use App\Models\goals;
 
 class DashboardController extends Controller
 {
@@ -38,6 +39,14 @@ class DashboardController extends Controller
         $goalStats = [
             'total' => 0,
             'completed' => 0,
+        ];
+
+        // Simple default daily targets (can be made user-configurable later)
+        $dailyTargets = [
+            'calories' => 2000,
+            'protein' => 75,
+            'carbs' => 250,
+            'fat' => 70,
         ];
 
         // Ensure hydration/exercise variables always exist (avoid undefined when student missing)
@@ -77,6 +86,12 @@ class DashboardController extends Controller
                 ->whereDate('recorded_at', now()->toDateString())
                 ->sum('duration_min');
             $recentExercises = Exercise::where('student_id', $student->id)->latest('recorded_at')->take(5)->get();
+
+            // Archived goals (soft-deleted)
+            $archivedGoals = goals::onlyTrashed()
+                ->where('student_id', $student->id)
+                ->latest('deleted_at')
+                ->get();
         }
 
         // Tips: students see only admin-sent tips (optionally personalized to them); admins see all
@@ -116,7 +131,9 @@ class DashboardController extends Controller
             'recentWater',
             'exerciseTodayMins',
             'recentExercises',
-            'reco'
+            'reco',
+            'archivedGoals',
+            'dailyTargets'
         ));
     }
 

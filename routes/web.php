@@ -41,7 +41,7 @@ Route::post('logout', function () {
 })->name('logout');
 
 Route::view('register', 'register')->middleware('guest')->name('register');
-Route::post('register', RegisterController::class)->middleware('auth')->name('register.store');
+Route::post('register', RegisterController::class)->middleware('guest')->name('register.store');
 
 
 Route::middleware(['auth'])->group(function () {
@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('exercises', ExerciseController::class)->only(['index','store']);
     Route::resource('tips', TipsController::class);
     Route::resource('goals', GoalsController::class);
+    Route::post('goals/{id}/restore', [GoalsController::class, 'restore'])->name('goals.restore');
     Route::resource('students', StudentsController::class);
 
     // Reports

@@ -40,9 +40,9 @@ class StudentsController extends Controller
      */
     public function store(Request $request)
     {
-        // Self-service creation: only capture profile attributes; user & generated student_id are automatic
+        // Self-service creation: capture profile attributes; user & generated student_id are automatic
         $validated = $request->validate([
-            'age' => 'nullable|integer|min:1',
+            'birth_date' => 'nullable|date',
             'sex' => 'nullable|string|max:10',
             'grade_level' => 'nullable|string|max:255',
         ]);
@@ -55,7 +55,7 @@ class StudentsController extends Controller
         $student = students::create([
             'user_id' => Auth::id(),
             'student_id' => $generatedId,
-            'age' => $validated['age'] ?? null,
+            'birth_date' => $validated['birth_date'] ?? null,
             'sex' => $validated['sex'] ?? null,
             'grade_level' => $validated['grade_level'] ?? null,
         ]);
@@ -91,7 +91,7 @@ class StudentsController extends Controller
     public function update(Request $request, students $student)
     {
          $validated = $request->validate([
-            'age' => 'nullable|integer|min:1',
+            'birth_date' => 'nullable|date',
             'sex' => 'nullable|string|max:10',
             'grade_level' => 'nullable|string|max:255',
         ]);

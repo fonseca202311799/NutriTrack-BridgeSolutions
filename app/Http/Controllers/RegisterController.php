@@ -11,9 +11,9 @@ class RegisterController extends Controller
      public function __invoke(Request $request)
     {
          $userData = $request->validate([
-            'name' => ['required', 'string'],
-            'email' => ['required', 'email'],
-            'password' => ['required'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email:rfc,dns', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
         $userData['password'] = bcrypt($userData['password']);
