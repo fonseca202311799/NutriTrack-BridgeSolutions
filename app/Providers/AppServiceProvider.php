@@ -20,12 +20,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        /*
+
         // Force HTTPS for all URLs in production
         if (env('APP_ENV') === 'production') {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
-        */
+
         Gate::define('isAdmin', function ($user) {
             return $user->role === 'admin';
         });
