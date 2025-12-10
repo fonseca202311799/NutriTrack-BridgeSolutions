@@ -94,23 +94,19 @@ class DashboardController extends Controller
                 ->get();
         }
 
-        // Tips: students see only admin-sent tips (optionally personalized to them); admins see all
-        $adminTipsQuery = Tip::with('user')->whereHas('user', function ($q) { $q->where('role', 'admin'); });
+        // Tips: admins see all; students see personalized tips (student_id) plus admin-sent tips
         if ($user->role === 'admin') {
-            $tips = (clone $adminTipsQuery)->latest('created_at')->get();
+            $tips = Tip::with('user')->latest('created_at')->get();
         } else {
             if ($student) {
-                if (Schema::hasColumn('tips', 'student_id')) {
-                    $tips = (clone $adminTipsQuery)
-                        ->where('student_id', $student->id)
-                        ->latest('created_at')
-                        ->get();
-                } else {
-                    // Column not present yet (migration not run); avoid crashing and show none
-                    $tips = collect();
-                }
+                $tips = Tip::with('user')
+                    ->where(function ($q) use ($student) {
+                        $q->where('student_id', $student->id)
+                          ->orWhereHas('user', function ($u) { $u->where('role', 'admin'); });
+                    })
+                    ->latest('created_at')
+                    ->get();
             } else {
-                // No student profile: only personalized tips are allowed (none)
                 $tips = collect();
             }
         }

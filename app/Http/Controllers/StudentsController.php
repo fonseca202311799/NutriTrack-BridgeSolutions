@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\students;
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\health_records;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -45,6 +46,8 @@ class StudentsController extends Controller
             'birth_date' => 'nullable|date',
             'sex' => 'nullable|string|max:10',
             'grade_level' => 'nullable|string|max:255',
+            'height' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
         ]);
 
         // Generate a unique student identifier
@@ -59,6 +62,29 @@ class StudentsController extends Controller
             'sex' => $validated['sex'] ?? null,
             'grade_level' => $validated['grade_level'] ?? null,
         ]);
+
+        // Persist initial health record if height/weight provided
+        if (!is_null($validated['height'] ?? null) || !is_null($validated['weight'] ?? null)) {
+            $height = $validated['height'] ?? null;
+            $weight = $validated['weight'] ?? null;
+            $bmi = null; $status = null;
+            if (!is_null($height) && !is_null($weight) && $height > 0) {
+                $m = $height / 100;
+                $bmi = round($weight / ($m * $m), 1);
+                if ($bmi < 18.5) $status = 'Underweight';
+                elseif ($bmi < 25) $status = 'Normal';
+                elseif ($bmi < 30) $status = 'Overweight';
+                else $status = 'Obese';
+            }
+            health_records::create([
+                'student_id' => $student->id,
+                'height' => $height,
+                'weight' => $weight,
+                'bmi' => $bmi,
+                'status' => $status,
+                'recorded_at' => now(),
+            ]);
+        }
 
         if ($request->filled('redirect_to') && $request->input('redirect_to') === 'dashboard') {
             return redirect()->route('dashboard')->with('success', 'Profile created successfully!');
@@ -94,9 +120,45 @@ class StudentsController extends Controller
             'birth_date' => 'nullable|date',
             'sex' => 'nullable|string|max:10',
             'grade_level' => 'nullable|string|max:255',
+            'height' => 'nullable|numeric|min:0',
+            'weight' => 'nullable|numeric|min:0',
         ]);
 
         $student->update($validated);
+
+        // Create or update latest health record with provided metrics
+        if (!is_null($validated['height'] ?? null) || !is_null($validated['weight'] ?? null)) {
+            $height = $validated['height'] ?? null;
+            $weight = $validated['weight'] ?? null;
+            $bmi = null; $status = null;
+            if (!is_null($height) && !is_null($weight) && $height > 0) {
+                $m = $height / 100;
+                $bmi = round($weight / ($m * $m), 1);
+                if ($bmi < 18.5) $status = 'Underweight';
+                elseif ($bmi < 25) $status = 'Normal';
+                elseif ($bmi < 30) $status = 'Overweight';
+                else $status = 'Obese';
+            }
+            $latest = $student->healthRecords()->latest('recorded_at')->first();
+            if ($latest) {
+                $latest->update([
+                    'height' => $height,
+                    'weight' => $weight,
+                    'bmi' => $bmi,
+                    'status' => $status,
+                    'recorded_at' => now(),
+                ]);
+            } else {
+                health_records::create([
+                    'student_id' => $student->id,
+                    'height' => $height,
+                    'weight' => $weight,
+                    'bmi' => $bmi,
+                    'status' => $status,
+                    'recorded_at' => now(),
+                ]);
+            }
+        }
         if ($request->filled('redirect_to') && $request->input('redirect_to') === 'dashboard') {
             return redirect()->route('dashboard')->with('success', 'Profile updated successfully!');
         }

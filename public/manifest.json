@@ -1,0 +1,21 @@
+{
+  "name": "NutriTrack",
+  "short_name": "NutriTrack",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f1f5f1",
+  "theme_color": "#2e7d32",
+  "description": "Track student nutrition, health, and goals.",
+  "icons": [
+    {
+      "src": "/images/nutritrack(2).png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/nutritrack(2).png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -25,7 +25,7 @@
     }
     function closeCompleteGoalModal() {
         var modal = document.getElementById('completeGoalModal');
-        modal.style.display = 'none';
+            <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:6px; font-size:.75rem;">
         document.body.style.overflow = '';
     }
     // Close modal on ESC
@@ -144,6 +144,12 @@
                         <span class="nav-label">Settings</span>
                     </a>
                 </li>
+                <li class="nav-item">
+                    <a href="{{ route('terms') }}" class="nav-link">
+                        <i class="fa-solid fa-file-contract" title="Terms"></i>
+                        <span class="nav-label">Terms & Conditions</span>
+                    </a>
+                </li>
             </ul>
 
             <ul class="nav-list secondary-nav">
@@ -177,6 +183,16 @@
     </aside>
 
     <div id="section-dashboard" class="dashboard-container offset" style="display:grid;">
+        @if(session('ai_assessment'))
+        <div class="card span-full" style="border-left:4px solid #2e7d32;">
+            <h2 style="margin-top:0; color:#2e7d2e;">Welcome Insights</h2>
+            <div class="text" style="white-space:pre-wrap; color:#333;">{{ session('ai_assessment') }}</div>
+            <form method="POST" action="{{ route('assessment.regenerate') }}" style="margin-top:10px; display:flex; justify-content:flex-end;">
+                @csrf
+                <button type="submit" class="btn-card">Regenerate AI Insights</button>
+            </form>
+        </div>
+        @endif
         <!-- Welcome Card -->
         <div class="card span-full welcome-card">
             <h2 style="margin-top:0;">Welcome, {{ auth()->user()->name }}!</h2>
@@ -186,34 +202,34 @@
             </div>
         </div>
         <!-- Nutrition Today -->
-        <div class="card nutrition-card">
-            <h2>Nutrition Today</h2>
-            <p class="text" style="margin:0 0 10px;">Aggregated intake recorded for {{ now()->format('M d, Y') }}</p>
-            <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(110px,1fr)); gap:8px;">
-                <li style="background:#f8f9fa; padding:8px; border-radius:6px; text-align:center;">
-                    <strong>{{ $nutritionToday['calories'] }}</strong><br><small>Calories</small>
+        <div class="card nutrition-card" style="display:flex; flex-direction:column;">
+            <h2 style="margin-bottom:6px;">Nutrition Today</h2>
+            <p class="text" style="margin:0 0 6px; font-size:.8rem;">Aggregated intake recorded for {{ now()->format('M d, Y') }}</p>
+            <ul style="list-style:none; padding:0; margin:0; display:grid; grid-template-columns:repeat(auto-fit,minmax(90px,1fr)); gap:6px;">
+                <li style="background:#f8f9fa; padding:5px; border-radius:6px; text-align:center;">
+                    <strong style="font-size:.95rem;">{{ $nutritionToday['calories'] }}</strong><br><small style="font-size:.7rem;">Calories</small>
                 </li>
-                <li style="background:#f8f9fa; padding:8px; border-radius:6px; text-align:center;">
-                    <strong>{{ $nutritionToday['protein'] }}</strong><br><small>Protein (g)</small>
+                <li style="background:#f8f9fa; padding:5px; border-radius:6px; text-align:center;">
+                    <strong style="font-size:.95rem;">{{ $nutritionToday['protein'] }}</strong><br><small style="font-size:.7rem;">Protein (g)</small>
                 </li>
-                <li style="background:#f8f9fa; padding:8px; border-radius:6px; text-align:center;">
-                    <strong>{{ $nutritionToday['carbs'] }}</strong><br><small>Carbs (g)</small>
+                <li style="background:#f8f9fa; padding:5px; border-radius:6px; text-align:center;">
+                    <strong style="font-size:.95rem;">{{ $nutritionToday['carbs'] }}</strong><br><small style="font-size:.7rem;">Carbs (g)</small>
                 </li>
-                <li style="background:#f8f9fa; padding:8px; border-radius:6px; text-align:center;">
-                    <strong>{{ $nutritionToday['fat'] }}</strong><br><small>Fat (g)</small>
+                <li style="background:#f8f9fa; padding:5px; border-radius:6px; text-align:center;">
+                    <strong style="font-size:.95rem;">{{ $nutritionToday['fat'] }}</strong><br><small style="font-size:.7rem;">Fat (g)</small>
                 </li>
             </ul>
             <!-- Macro Split Donut + Targets vs Actual -->
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px; align-items:center; margin-top:12px;">
-                <div style="display:flex; flex-direction:column; align-items:center; gap:8px;">
-                    <canvas id="macroChart" width="120" height="120"></canvas>
-                    <div style="display:flex; gap:10px; font-size:.8rem; color:#555; flex-wrap:wrap; justify-content:center;">
-                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;background:#1e88e5;border-radius:2px;display:inline-block;"></span>Protein</span>
-                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;background:#43a047;border-radius:2px;display:inline-block;"></span>Carbs</span>
-                        <span style="display:inline-flex; align-items:center; gap:6px;"><span style="width:10px;height:10px;background:#fb8c00;border-radius:2px;display:inline-block;"></span>Fat</span>
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(170px,1fr)); gap:8px; align-items:start; margin-top:8px;">
+                <div style="display:flex; flex-direction:column; align-items:center; gap:4px;">
+                    <canvas id="macroChart" width="90" height="90"></canvas>
+                    <div style="display:flex; gap:6px; font-size:.7rem; color:#555; flex-wrap:wrap; justify-content:center;">
+                        <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:7px;height:7px;background:#1e88e5;border-radius:2px;display:inline-block;"></span>Protein</span>
+                        <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:7px;height:7px;background:#43a047;border-radius:2px;display:inline-block;"></span>Carbs</span>
+                        <span style="display:inline-flex; align-items:center; gap:4px;"><span style="width:7px;height:7px;background:#fb8c00;border-radius:2px;display:inline-block;"></span>Fat</span>
                     </div>
                 </div>
-                <div>
+                <div style="min-height:0;">
                     @php
                         $calTarget = (int)($dailyTargets['calories'] ?? 0);
                         $pTarget = (int)($dailyTargets['protein'] ?? 0);
@@ -231,48 +247,54 @@
                         $cBar = $bar($nutritionToday['carbs'], $cTarget);
                         $fBar = $bar($nutritionToday['fat'], $fTarget);
                     @endphp
-                    <div style="display:grid; gap:10px;">
+                    <div style="display:grid; gap:6px; padding-right:2px;">
                         <div>
-                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                            <div style="display:flex; justify-content:space-between; font-size:.7rem; color:#555;">
                                 <span>Calories</span>
                                 <span>{{ $nutritionToday['calories'] }} / {{ $calTarget }} kcal</span>
                             </div>
-                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                            <div style="background:#eee; height:7px; border-radius:6px; overflow:hidden;">
                                 <div style="height:100%; width:{{ $calBar['w'] }}%; background:{{ $calBar['bg'] }};"></div>
                             </div>
                         </div>
                         <div>
-                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                            <div style="display:flex; justify-content:space-between; font-size:.7rem; color:#555;">
                                 <span>Protein</span>
                                 <span>{{ $nutritionToday['protein'] }} / {{ $pTarget }} g</span>
                             </div>
-                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                            <div style="background:#eee; height:7px; border-radius:6px; overflow:hidden;">
                                 <div style="height:100%; width:{{ $pBar['w'] }}%; background:{{ $pBar['bg'] }};"></div>
                             </div>
                         </div>
                         <div>
-                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                            <div style="display:flex; justify-content:space-between; font-size:.7rem; color:#555;">
                                 <span>Carbs</span>
                                 <span>{{ $nutritionToday['carbs'] }} / {{ $cTarget }} g</span>
                             </div>
-                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                            <div style="background:#eee; height:7px; border-radius:6px; overflow:hidden;">
                                 <div style="height:100%; width:{{ $cBar['w'] }}%; background:{{ $cBar['bg'] }};"></div>
                             </div>
                         </div>
                         <div>
-                            <div style="display:flex; justify-content:space-between; font-size:.8rem; color:#555;">
+                            <div style="display:flex; justify-content:space-between; font-size:.7rem; color:#555;">
                                 <span>Fat</span>
                                 <span>{{ $nutritionToday['fat'] }} / {{ $fTarget }} g</span>
                             </div>
-                            <div style="background:#eee; height:10px; border-radius:6px; overflow:hidden;">
+                            <div style="background:#eee; height:7px; border-radius:6px; overflow:hidden;">
                                 <div style="height:100%; width:{{ $fBar['w'] }}%; background:{{ $fBar['bg'] }};"></div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="card-actions" style="margin-top:12px; display:flex; gap:10px; flex-wrap:wrap;">
-                <button class="btn-card" type="button" onclick="openModal('addIntakeModal')">Add Intake</button>
+            <div class="card-actions" style="margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; padding-top:6px; border-top:1px solid #f1f1f1;">
+                <button class="btn-card" type="button" style="flex:1 1 130px; min-width:110px; padding:6px 10px; font-size:.85rem;" onclick="openModal('addIntakeModal')">Add Intake</button>
+                @if(isset($student))
+                <form method="POST" action="{{ route('ai.suggest.apply') }}" style="display:inline-flex; flex:1 1 160px; min-width:130px;">
+                    @csrf
+                    <button class="btn-card" type="submit" style="width:100%; padding:6px 10px; font-size:.85rem;">Suggest Intake & Goal (AI)</button>
+                </form>
+                @endif
             </div>
         </div>
 
@@ -513,25 +535,6 @@
                         </div>
                     </div>
 
-                    <div class="form-grid" style="margin-top:12px;">
-                        <div class="form-group">
-                            <label class="form-label" for="height">Height (cm)</label>
-                            <input id="height" type="number" step="0.1" name="height" min="0" class="form-control" placeholder="e.g., 170" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="weight">Weight (kg)</label>
-                            <input id="weight" type="number" step="0.1" name="weight" min="0" class="form-control" placeholder="e.g., 65" />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="bmi">BMI</label>
-                            <input id="bmi" type="number" step="0.1" name="bmi" min="0" class="form-control" placeholder="Auto-calculated" readonly />
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="status">Status</label>
-                            <input id="status" type="text" name="status" class="form-control" placeholder="Auto-calculated" readonly />
-                        </div>
-                    </div>
-
                     <div class="form-actions" style="margin-top:12px;">
                         <button type="submit" class="btn-card">Save Intake</button>
                     </div>
@@ -716,6 +719,14 @@
         <div id="section-tips" class="dashboard-container offset" style="display:none;">
             <div class="card span-full">
                 <h2>Tips</h2>
+                @if(isset($student))
+                    <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:10px;">
+                        <form method="POST" action="{{ route('ai.tips.generate') }}" style="display:inline;">
+                            @csrf
+                            <button class="btn-card" type="submit">Generate Tips (AI)</button>
+                        </form>
+                    </div>
+                @endif
                 @if(isset($tips) && $tips->isNotEmpty())
                     <ul style="list-style:none; padding:0; margin:0;">
                         @foreach($tips as $tip)
@@ -727,7 +738,15 @@
                                             @if($tip->category)
                                                 <span class="badge" style="background:#eee;color:#333;padding:4px 8px;border-radius:6px;margin-right:8px;">{{ $tip->category }}</span>
                                             @endif
-                                            <small>by {{ optional($tip->user)->name ?? 'Unknown' }} • {{ $tip->created_at?->format('M d, Y') }}</small>
+                                            @php($isAiTip = isset($student) && (int)($tip->student_id) === (int)($student->id) && optional($tip->user)->role !== 'admin')
+                                            @if($isAiTip)
+                                                <span class="badge" style="background:#2e7d32;color:#fff;padding:4px 8px;border-radius:6px;margin-right:8px;">AI</span>
+                                            @endif
+                                            @if($isAiTip)
+                                                <small>AI • {{ $tip->created_at?->format('M d, Y') }}</small>
+                                            @else
+                                                <small>by {{ optional($tip->user)->name ?? 'Unknown' }} • {{ $tip->created_at?->format('M d, Y') }}</small>
+                                            @endif
                                         </p>
                                     </div>
                                     <div style="display:flex;gap:8px;flex-shrink:0;">
@@ -824,6 +843,24 @@
                                 <small class="text" style="color:#666;">Age: <span id="new_age_preview">—</span></small>
                                 @error('birth_date')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
                             </div>
+                            <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
+                                <div class="form-group">
+                                    <label class="form-label" for="new_height">Height (cm)</label>
+                                    <input id="new_height" type="number" step="0.1" name="height" min="0" class="form-control" value="{{ old('height') }}" placeholder="e.g., 170" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="new_weight">Weight (kg)</label>
+                                    <input id="new_weight" type="number" step="0.1" name="weight" min="0" class="form-control" value="{{ old('weight') }}" placeholder="e.g., 65" />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="new_bmi">BMI</label>
+                                    <input id="new_bmi" type="number" step="0.1" class="form-control" placeholder="Auto-calculated" readonly />
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label" for="new_status">Status</label>
+                                    <input id="new_status" type="text" class="form-control" placeholder="Auto-calculated" readonly />
+                                </div>
+                            </div>
                             <div class="form-group">
                                 <label class="form-label" for="new_sex">Sex</label>
                                 <select id="new_sex" name="sex" class="form-control">
@@ -871,6 +908,24 @@
                     <input id="edit_birth_date" type="date" name="birth_date" class="form-control" value="{{ old('birth_date', optional($student->birth_date)->format('Y-m-d')) }}" />
                     <small class="text" style="color:#666;">Age: <span id="edit_age_preview">{{ $student->age ?? '—' }}</span></small>
                     @error('birth_date')<p class="text" style="color:#b71c1c; margin-top:4px;">{{ $message }}</p>@enderror
+                </div>
+                <div class="form-grid" style="grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:8px;">
+                    <div class="form-group">
+                        <label class="form-label" for="edit_height">Height (cm)</label>
+                        <input id="edit_height" type="number" step="0.1" name="height" min="0" class="form-control" value="{{ old('height', optional($latestRecord)->height) }}" placeholder="e.g., 170" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit_weight">Weight (kg)</label>
+                        <input id="edit_weight" type="number" step="0.1" name="weight" min="0" class="form-control" value="{{ old('weight', optional($latestRecord)->weight) }}" placeholder="e.g., 65" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit_bmi">BMI</label>
+                        <input id="edit_bmi" type="number" step="0.1" class="form-control" value="{{ old('bmi', optional($latestRecord)->bmi) }}" placeholder="Auto-calculated" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="edit_status">Status</label>
+                        <input id="edit_status" type="text" class="form-control" value="{{ old('status', optional($latestRecord)->status) }}" placeholder="Auto-calculated" readonly />
+                    </div>
                 </div>
                 <div class="form-group">
                     <label class="form-label" for="edit_sex">Sex</label>
@@ -979,25 +1034,6 @@
                     </div>
                 </div>
 
-                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:12px;">
-                    <div>
-                        <label class="form-label">Height (cm)</label>
-                        <input id="modal_height" type="number" step="0.1" name="height" min="0" class="form-control" />
-                    </div>
-                    <div>
-                        <label class="form-label">Weight (kg)</label>
-                        <input id="modal_weight" type="number" step="0.1" name="weight" min="0" class="form-control" />
-                    </div>
-                    <div>
-                        <label class="form-label">BMI</label>
-                        <input id="modal_bmi" type="number" step="0.1" name="bmi" min="0" class="form-control" placeholder="Auto-calculated" readonly />
-                    </div>
-                    <div>
-                        <label class="form-label">Status</label>
-                        <input id="modal_status" type="text" name="status" class="form-control" placeholder="Auto-calculated" readonly />
-                    </div>
-                </div>
-
                 <div style="margin-top:16px;display:flex;gap:10px;justify-content:flex-end;">
                     <button type="button" class="btn-card" style="background:#6c757d;" onclick="closeModal('addIntakeModal')">Cancel</button>
                     <button type="submit" class="btn-card">Save Intake</button>
@@ -1102,9 +1138,9 @@
         }
         document.addEventListener('DOMContentLoaded', function() {
             showSection('dashboard');
-            // Bind BMI auto-calc on both forms
-            bindBMI('height','weight','bmi','status');
-            bindBMI('modal_height','modal_weight','modal_bmi','modal_status');
+            // Bind BMI auto-calc for profile forms
+            bindBMI('new_height','new_weight','new_bmi','new_status');
+            bindBMI('edit_height','edit_weight','edit_bmi','edit_status');
             // Default intake dates to today if empty
             try {
                 var todayStr = new Date().toISOString().slice(0,10);

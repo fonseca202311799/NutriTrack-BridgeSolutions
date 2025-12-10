@@ -77,6 +77,17 @@ class HealthRecordsController extends Controller
             }
         }
 
+        // If height/weight are missing, carry forward from latest record to satisfy DB non-null constraints
+        if (empty($validated['height']) || empty($validated['weight'])) {
+            $latest = health_records::where('student_id', $validated['student_id'])->latest('recorded_at')->first();
+            if ($latest) {
+                if (empty($validated['height'])) $validated['height'] = $latest->height;
+                if (empty($validated['weight'])) $validated['weight'] = $latest->weight;
+                if (empty($validated['bmi'])) $validated['bmi'] = $latest->bmi;
+                if (empty($validated['status'])) $validated['status'] = $latest->status;
+            }
+        }
+
         health_records::create($validated);
         if ($request->input('redirect_to') === 'dashboard') {
             return redirect()->route('dashboard')->with('success', 'Intake saved successfully!');

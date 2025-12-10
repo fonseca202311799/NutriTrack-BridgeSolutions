@@ -8,13 +8,16 @@ use App\Http\Controllers\RegisterController;
 
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HealthRecordsController;
-use App\Http\Controllers\TipsController;
 use App\Http\Controllers\GoalsController;
 use App\Http\Controllers\StudentsController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\WaterIntakeController;
 use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\AssessmentController;
+use App\Http\Controllers\SuggestionsController;
+use App\Http\Controllers\TipsController;
+// Removed duplicate TipsController import
 
 
 
@@ -43,8 +46,11 @@ Route::post('logout', function () {
 Route::view('register', 'register')->middleware('guest')->name('register');
 Route::post('register', RegisterController::class)->middleware('guest')->name('register.store');
 
+// Public Terms & Conditions page
+Route::view('/terms', 'terms')->name('terms');
 
-Route::middleware(['auth'])->group(function () {
+
+Route::middleware(['auth', \App\Http\Middleware\FirstLoginAssessment::class])->group(function () {
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::resource('users', UserController::class)->except(['show', 'edit', 'update']);
     Route::resource('health-records', HealthRecordsController::class);
@@ -81,4 +87,16 @@ Route::middleware(['auth'])->group(function () {
         }
         return view('admin-dashboard');
     })->where('any', '.*');
+});
+
+// Assessment routes
+Route::middleware(['auth'])->group(function(){
+    Route::get('assessment', [AssessmentController::class, 'show'])->name('assessment.show');
+    Route::post('assessment', [AssessmentController::class, 'submit'])->name('assessment.submit');
+    // Regenerate AI Insights on demand
+    Route::post('assessment/regenerate-insights', [AssessmentController::class, 'regenerateInsights'])->name('assessment.regenerate');
+    // Apply AI suggestions (intake + goal)
+    Route::post('ai/suggest/apply', [SuggestionsController::class, 'apply'])->name('ai.suggest.apply');
+    // Generate AI-powered tips
+    Route::post('ai/tips/generate', [TipsController::class, 'generate'])->name('ai.tips.generate');
 });

@@ -114,13 +114,47 @@ class ReportController extends Controller
             ];
         }
 
+        // Compute totals and averages for footer
+        $daysCount = max(1, count($rows));
+        $totals = [
+            'calories' => array_sum(array_column($rows, 1)),
+            'protein' => array_sum(array_column($rows, 2)),
+            'carbs' => array_sum(array_column($rows, 3)),
+            'fat' => array_sum(array_column($rows, 4)),
+            'water_ml' => array_sum(array_column($rows, 5)),
+            'exercise_min' => array_sum(array_column($rows, 6)),
+        ];
+        $averages = [
+            'calories' => (int) round($totals['calories'] / $daysCount),
+            'protein' => (int) round($totals['protein'] / $daysCount),
+            'carbs' => (int) round($totals['carbs'] / $daysCount),
+            'fat' => (int) round($totals['fat'] / $daysCount),
+            'water_ml' => (int) round($totals['water_ml'] / $daysCount),
+            'exercise_min' => (int) round($totals['exercise_min'] / $daysCount),
+        ];
+
         $filename = 'health_report_' . now()->format('Ymd_His') . '.csv';
-        return response()->streamDownload(function () use ($rows) {
+        return response()->streamDownload(function () use ($rows, $student, $start, $end, $totals, $averages) {
             $out = fopen('php://output', 'w');
+            // Header block (metadata)
+            fputcsv($out, ['NutriTrack Health Report']);
+            fputcsv($out, ['Student', $student->name ?? (optional($student->user)->name ?? 'Unknown')]);
+            fputcsv($out, ['Date Range', $start->toDateString().' to '.$end->toDateString()]);
+            fputcsv($out, []);
+
+            // Column headers
             fputcsv($out, ['date','calories','protein','carbs','fat','water_ml','exercise_min']);
             foreach ($rows as $row) {
                 fputcsv($out, $row);
             }
+
+            // Footer block (totals and averages)
+            fputcsv($out, []);
+            fputcsv($out, ['Totals','', $totals['protein'], $totals['carbs'], $totals['fat'], $totals['water_ml'], $totals['exercise_min']]);
+            // Place calories total under the calories column
+            // Rewrite totals row ensuring correct positions
+            fputcsv($out, ['Totals (corrected)', $totals['calories'], $totals['protein'], $totals['carbs'], $totals['fat'], $totals['water_ml'], $totals['exercise_min']]);
+            fputcsv($out, ['Averages', $averages['calories'], $averages['protein'], $averages['carbs'], $averages['fat'], $averages['water_ml'], $averages['exercise_min']]);
             fclose($out);
         }, $filename, [
             'Content-Type' => 'text/csv',

@@ -328,30 +328,27 @@ details.form-details summary {
 /* Dashboard: unify card heights (excluding span-full welcome) */
 #section-dashboard .card {
     overflow: visible;
-    height: 280px;
-    max-height: 280px;
+    height: 320px;
+    max-height: 320px;
 }
 
 /* Reduced height for the welcome card */
 #section-dashboard .card.welcome-card {
-    height: 160px;
-    max-height: 160px;
+    height: 180px;
+    max-height: 180px;
     display: flex;
     flex-direction: column;
     justify-content: center;
 }
 
-/* Allow taller / auto height for dynamic content cards to prevent button overflow */
-#section-dashboard .card.nutrition-card,
-#section-dashboard .card.exercise-card {
-    height: auto;
-    max-height: none;
-}
+/* Ensure buttons anchor to bottom area if card grows */
+.card .card-actions,
+.card .form-actions { margin-top: auto; }
 
 /* Goals card: keep same fixed height as other cards */
 #section-dashboard .card.goals-card {
-    height: 280px;
-    max-height: 280px;
+    height: 320px;
+    max-height: 320px;
 }
 
 /* When sidebar is collapsed, hide the inline legend to prevent wrapping/overflow */
@@ -479,7 +476,58 @@ details.form-details summary {
     text-align: center;
     position: relative;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    max-height: 80vh; /* make modal scrollable when content is long */
+    overflow: auto;
 }
+
+/* Enhanced UI for archive modal */
+#archivedGoalsModal .modal-content {
+    max-width: 720px;
+    text-align: left !important;
+    padding: 22px 22px 16px;
+}
+
+#archivedGoalsModal h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem;
+    color: #2a7d2e;
+}
+
+#archivedGoalsModal .archive-list {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 0 0;
+}
+
+#archivedGoalsModal .archive-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid #f1f1f1;
+}
+
+#archivedGoalsModal .archive-item .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+#archivedGoalsModal .archive-item .meta strong { font-size: 0.95rem; color: #2a2a2a; }
+#archivedGoalsModal .archive-item .meta small { color: #666; font-size: 0.8rem; }
+
+#archivedGoalsModal .actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+#archivedGoalsModal .btn-card { padding: 6px 10px; font-size: 0.85rem; }
+#archivedGoalsModal .btn-danger { background:#b71c1c; color:#fff; }
+
+/* Close button positioning and hover consistency */
+#archivedGoalsModal .close { top: 10px; right: 15px; }
 
 .modal-content h2 {
     color: #2a7d2e;
@@ -536,6 +584,21 @@ details.form-details summary {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
+/* Uniform modal header + actions */
+.modal-title { margin:0 0 8px 0; font-size:1.25rem; font-weight:700; color:#2a2a2a; }
+.modal-actions { display:flex; gap:10px; justify-content:flex-end; }
+
+/* Button variants */
+.btn-card { background:#2e7d32; color:#fff; padding:8px 12px; border:none; border-radius:8px; cursor:pointer; font-weight:600; box-shadow:0 2px 6px rgba(0,0,0,0.08); }
+.btn-card:hover { filter:brightness(1.05); }
+.btn-secondary { background:#6c757d !important; }
+.btn-danger { background:#b71c1c !important; }
+
+/* Archive modal list uniform spacing */
+#archivedGoalsModal .archive-list { border-top:1px solid #f1f1f1; }
+#archivedGoalsModal .archive-item { background:#fff; }
+#archivedGoalsModal .archive-item-actions { background:#fff; }
+#archivedGoalsModal #archivePager { border-top:1px solid #f1f1f1; }
 }
 
 .modal-content {
@@ -546,6 +609,8 @@ details.form-details summary {
     width: 90%;
     max-width: 700px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    max-height: 80vh; /* consistent scrollable modal */
+    overflow: auto;
 }
 
 .close {

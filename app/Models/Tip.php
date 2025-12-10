@@ -13,6 +13,7 @@ class Tip extends Model
         'title',
         'content',
         'category',
+        'student_id',
         'created_by',
     ];
 

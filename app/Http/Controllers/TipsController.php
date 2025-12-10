@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Tip;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\AiAssessmentService;
 
 class TipsController extends Controller
 {
@@ -22,6 +23,27 @@ class TipsController extends Controller
                 })->get();
         }
         return view('tips.index', compact('tips'));
+    }
+
+    public function generate()
+    {
+        $user = Auth::user();
+        $student = \App\Models\students::where('user_id', $user->id)->first();
+        if (!$student) {
+            return redirect()->route('dashboard')->with('error', 'Create a student profile first to get AI tips.');
+        }
+        $tips = app(AiAssessmentService::class)->generateTips($student, 4, true);
+        // Persist generated tips as user-visible entries linked to this student
+        foreach ($tips as $t) {
+            Tip::create([
+                'title' => $t['title'] ?? 'Tip',
+                'content' => $t['content'] ?? '',
+                'category' => $t['category'] ?? null,
+                'student_id' => $student->id,
+                'created_by' => $user->id,
+            ]);
+        }
+        return redirect()->route('dashboard')->with('success', 'AI tips generated for you!');
     }
 
     public function create()
