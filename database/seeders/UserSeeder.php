@@ -24,6 +24,8 @@ class UserSeeder extends Seeder
             'role' => 'student',
         ]);
 
+
+
         $admin = User::create([
             'name' => 'Ira Jacob Javier',
             'email' => 'admin@gordoncollege.edu.ph',
