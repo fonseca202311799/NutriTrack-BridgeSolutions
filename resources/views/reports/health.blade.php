@@ -1,15 +1,28 @@
 <x-dashboard-layout>
     <div class="dashboard-container offset" style="display:grid;">
+        <!-- Print Header (shown only in PDF/print) -->
+        <div class="print-header" style="display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; padding-top:4mm;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <img src="{{ asset('images/nutritrack(2).png') }}" alt="NutriTrack" style="height:18px;" />
+                </div>
+                <div style="letter-spacing:1.5px; font-size:.78rem; color:#111; opacity:.8;">CONFIDENTIAL</div>
+            </div>
+            <div style="margin-top:3mm; border-top:2px solid #0f5132;"></div>
+        </div>
         <div class="card span-full report-header">
             <div class="report-header-row">
                 <div>
                     <h2 class="report-title">Health Report</h2>
                     <p class="report-dates"><span class="date-pill">{{ $start->format('M d, Y') }} – {{ $end->format('M d, Y') }}</span></p>
                 </div>
+                @if(!request()->boolean('pdf'))
                 <div class="report-actions">
                     <a class="btn-card" href="{{ route('reports.health.csv') }}">Download CSV</a>
+                    <a class="btn-card" href="{{ route('reports.health.pdf') }}" target="_blank">Download PDF</a>
                     <button class="btn-card" onclick="window.print()">Print / Save as PDF</button>
                 </div>
+                @endif
             </div>
         </div>
 
@@ -166,13 +179,48 @@
         .report-table tbody tr:nth-child(odd) { background:#fcfcfd; }
         .report-table tbody tr:hover { background:#f6fbf7; }
 
+        /* Default hidden for screen */
+        .print-header, .print-footer { display:none; }
+
         @media print {
+            /* Page setup */
+            @page { size: A4; margin: 22mm 15mm 18mm 15mm; }
+
+            /* Hide app chrome and interactive buttons */
             .sidebar, .sidebar-header, .sidebar-nav, .toggler, .nav-list, .nav-item, .btn-card { display: none !important; }
+            .report-actions { display: none !important; }
+
+            /* Content area reset */
+            body { margin: 0; }
             .dashboard-container { padding: 0 !important; }
-            .card { box-shadow: none !important; border: 1px solid #dfe7e3; }
             .offset { margin-left: 0 !important; }
-            .report-header { background:#fff !important; }
+
+            /* Repeat header/footer every page */
+            .print-header { display:block; position:fixed; top:0; left:0; right:0; padding:0 15mm 4mm 15mm; background:#fff; }
+            .print-footer { display:block; position:fixed; bottom:0; left:0; right:0; padding:6mm 15mm; background:#fff; border-top:1px solid #e5e7eb; color:#64748b; font-size:.85rem; }
+            .print-footer .page-number::after { content: counter(page) " of " counter(pages); }
+
+            /* Cards & tables refined for print */
+            .card { box-shadow: none !important; border: 1px solid #e5e7eb; page-break-inside: avoid; }
+            .report-header { background:#fff !important; border:none !important; padding:6mm 0 3mm 0 !important; }
             .report-table thead th { position:static; }
+            .report-table { page-break-inside: auto; }
+            .report-table tr { page-break-inside: avoid; page-break-after: auto; }
+
+            /* Title styling */
+            .report-title { font-size:1.4rem !important; color:#0f5132 !important; }
+            .report-dates { color:#0f5132 !important; }
+
+            /* Accents */
+            .badge-pill.success { color:#0f5132 !important; border-color:#cde7d3 !important; }
         }
     </style>
+
+    <!-- Print Footer (shown only in PDF/print) -->
+    <div class="print-footer" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span>Generated on {{ now()->format('M d, Y h:i A') }}</span>
+            <span class="page-number">Page </span>
+        </div>
+    </div>
 </x-dashboard-layout>

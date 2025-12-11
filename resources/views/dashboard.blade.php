@@ -145,7 +145,7 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a href="{{ route('terms') }}" class="nav-link">
+                    <a href="#" class="nav-link" data-section="terms" onclick="showSection('terms'); return false;">
                         <i class="fa-solid fa-file-contract" title="Terms"></i>
                         <span class="nav-label">Terms & Conditions</span>
                     </a>
@@ -495,6 +495,13 @@
         </div>
     </div>
 
+    <!-- Terms & Conditions Section -->
+    <div id="section-terms" class="dashboard-container offset" style="display:none;">
+        <div class="card span-full" style="width:100%; background:#fff;">
+            @include('partials.terms_content')
+        </div>
+    </div>
+
         <!-- Health Section -->
         <div id="section-health" class="dashboard-container offset" style="display:none;">
             <div class="card span-full">
@@ -725,6 +732,7 @@
                             @csrf
                             <button class="btn-card" type="submit">Generate Tips (AI)</button>
                         </form>
+                        <button class="btn-card" type="button" style="background:#b08900;" onclick="openModal('replaceTipsModal')">Replace Today’s Tips</button>
                     </div>
                 @endif
                 @if(isset($tips) && $tips->isNotEmpty())
@@ -1044,9 +1052,15 @@
 
     <!-- Health Report Modal -->
     <div id="healthReportModal" class="modal" style="display:none;">
-        <div class="modal-content" style="max-width:1000px; width:95%; height:80vh;">
+        <div class="modal-content" style="max-width:1000px; width:95%; height:80vh; position:relative; display:flex; flex-direction:column;">
             <span class="close" onclick="closeModal('healthReportModal')">&times;</span>
-            <iframe src="{{ route('reports.health', ['embed' => 1]) }}" style="width:100%; height:100%; border:none; border-radius:8px; background:#fff;"></iframe>
+            <div style="flex:1 1 auto; min-height:0;">
+                <iframe id="healthReportFrame" src="{{ route('reports.health', ['embed' => 1, 'pdf' => 1]) }}" style="width:100%; height:100%; border:none; border-radius:8px; background:#fff;"></iframe>
+            </div>
+            <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+                <a class="btn-card" href="{{ route('reports.health.pdf') }}" target="_blank" rel="noopener">Download PDF</a>
+                <button type="button" class="btn-card" onclick="printHealthReport()">Print PDF</button>
+            </div>
         </div>
     </div>
 
@@ -1122,7 +1136,28 @@
             }
         }
 
-        const sections = ['dashboard','health','goals','tips','settings','profile'];
+        function printHealthReport(){
+            try {
+                var frame = document.getElementById('healthReportFrame');
+                if (frame && frame.contentWindow) {
+                    frame.contentWindow.focus();
+                    frame.contentWindow.print();
+                    return;
+                }
+            } catch(e) { /* fall through */ }
+            // Fallback: open report in new window and trigger print
+            var url = "{{ route('reports.health', ['embed' => 1, 'pdf' => 1]) }}";
+            var w = window.open(url, '_blank');
+            if (w) {
+                var iv = setInterval(function(){
+                    try {
+                        if (w.document && w.document.readyState === 'complete') { w.focus(); w.print(); clearInterval(iv); }
+                    } catch(e) {}
+                }, 500);
+            }
+        }
+
+        const sections = ['dashboard','health','goals','tips','settings','profile','terms'];
         function showSection(name) {
             sections.forEach(s => {
                 const el = document.getElementById('section-' + s);
@@ -1294,6 +1329,25 @@
             <div style="margin-top:20px; display:flex; justify-content:flex-end; gap:10px;">
                 <button class="btn-card" type="button" onclick="closeTipModal()">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Replace Tips Confirmation Modal -->
+    <div id="replaceTipsModal" class="modal" style="display:none;">
+        <div class="modal-content" style="max-width:560px; text-align:left;">
+            <span class="close" onclick="closeModal('replaceTipsModal')">&times;</span>
+            <h2 style="margin-top:0; color:#2a7d2e;">Replace Today’s Tips</h2>
+            <p class="text" style="margin:6px 0 0 0; color:#555;">
+                This will delete the tips you generated today and create three new AI tips.
+            </p>
+            <p class="text" style="margin:6px 0 0 0; color:#777; font-size:.9rem;">
+                Admin-sent tips are not affected.
+            </p>
+            <form method="POST" action="{{ route('ai.tips.replace') }}" style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
+                @csrf
+                <button type="button" class="btn-card" onclick="closeModal('replaceTipsModal')">Cancel</button>
+                <button type="submit" class="btn-card" style="background:#b08900;">Replace Tips</button>
+            </form>
         </div>
     </div>
 </x-dashboard-layout>

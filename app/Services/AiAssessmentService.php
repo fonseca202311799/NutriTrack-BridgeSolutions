@@ -154,7 +154,7 @@ class AiAssessmentService
             if (is_array($cached)) return $cached;
         }
 
-        $prompt = "Create ${count} concise health tips tailored to a student. Use their BMI/status and preferences. Each tip: title (<=50 chars), content (<=180 chars), category (Nutrition/Lifestyle/Mental/Exercise). Return ONLY JSON array of objects with keys title, content, category. Context: BMI=$bmi, status=$status, height=${height}cm, weight=${weight}kg, preferences='$prefs'.";
+        $prompt = "Create ${count} concise health tips tailored to a student. Use their BMI/status and preferences. Each tip: title (<=50 chars), content (<=180 chars), category (Nutrition/Lifestyle/Mental/Exercise). Return ONLY JSON array of ${count} objects with keys title, content, category. Context: BMI=$bmi, status=$status, height=${height}cm, weight=${weight}kg, preferences='$prefs'.";
         $apiKey = env('OPENAI_API_KEY');
         if ($apiKey) {
             try {
@@ -171,8 +171,9 @@ class AiAssessmentService
                     $text = data_get($resp->json(), 'choices.0.message.content');
                     $parsed = json_decode((string)$text, true);
                     if (is_array($parsed) && count($parsed)) {
-                        Cache::put($cacheKey, $parsed, now()->endOfDay());
-                        return $parsed;
+                        $final = array_slice($parsed, 0, max(1, $count));
+                        Cache::put($cacheKey, $final, now()->endOfDay());
+                        return $final;
                     }
                 }
             } catch (\Throwable $e) { /* fallback below */ }
@@ -196,7 +197,8 @@ class AiAssessmentService
         $tips[] = ['title'=>'Hydrate Well','content'=>'Keep a water bottle with you and sip regularly through the day.','category'=>'Lifestyle'];
         $tips[] = ['title'=>'Sleep Matters','content'=>'Target 7–8 hours nightly to recharge and support health.','category'=>'Mental'];
 
-        Cache::put($cacheKey, $tips, now()->endOfDay());
-        return $tips;
+        $final = array_slice($tips, 0, max(1, $count));
+        Cache::put($cacheKey, $final, now()->endOfDay());
+        return $final;
     }
 }

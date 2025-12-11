@@ -96,7 +96,7 @@ class DashboardController extends Controller
 
         // Tips: admins see all; students see personalized tips (student_id) plus admin-sent tips
         if ($user->role === 'admin') {
-            $tips = Tip::with('user')->latest('created_at')->get();
+            $tips = Tip::with('user')->latest('created_at')->take(20)->get();
         } else {
             if ($student) {
                 $tips = Tip::with('user')
@@ -105,6 +105,7 @@ class DashboardController extends Controller
                           ->orWhereHas('user', function ($u) { $u->where('role', 'admin'); });
                     })
                     ->latest('created_at')
+                    ->take(20)
                     ->get();
             } else {
                 $tips = collect();

@@ -32,18 +32,63 @@ class TipsController extends Controller
         if (!$student) {
             return redirect()->route('dashboard')->with('error', 'Create a student profile first to get AI tips.');
         }
-        $tips = app(AiAssessmentService::class)->generateTips($student, 4, true);
-        // Persist generated tips as user-visible entries linked to this student
+        // Daily guard: one click per day that generates 3 tips
+        $today = now()->toDateString();
+        $alreadyToday = Tip::where('student_id', $student->id)
+            ->where('created_by', $user->id)
+            ->whereDate('created_at', $today)
+            ->count();
+        if ($alreadyToday >= 3) {
+            return redirect()->route('dashboard')->with('error', 'You already generated today\'s tips. Try again tomorrow or ask to replace today\'s tips.');
+        }
+        $tips = app(AiAssessmentService::class)->generateTips($student, 3, true);
+
+        // Normalize categories and lengths; avoid duplicates for today
+        $allowed = ['Nutrition','Lifestyle','Mental','Exercise'];
+        $today = now()->toDateString();
         foreach ($tips as $t) {
+            $title = trim((string)($t['title'] ?? 'Tip'));
+            $content = trim((string)($t['content'] ?? ''));
+            $category = trim((string)($t['category'] ?? ''));
+
+            if (strlen($title) > 50) { $title = mb_substr($title, 0, 50); }
+            if (strlen($content) > 180) { $content = mb_substr($content, 0, 180); }
+            if (!in_array($category, $allowed, true)) { $category = 'Lifestyle'; }
+
+            $duplicate = Tip::where('student_id', $student->id)
+                ->where('created_by', $user->id)
+                ->whereDate('created_at', $today)
+                ->where('title', $title)
+                ->exists();
+            if ($duplicate) { continue; }
+
             Tip::create([
-                'title' => $t['title'] ?? 'Tip',
-                'content' => $t['content'] ?? '',
-                'category' => $t['category'] ?? null,
+                'title' => $title,
+                'content' => $content,
+                'category' => $category,
                 'student_id' => $student->id,
                 'created_by' => $user->id,
             ]);
         }
         return redirect()->route('dashboard')->with('success', 'AI tips generated for you!');
+    }
+
+    public function replaceToday()
+    {
+        $user = Auth::user();
+        $student = \App\Models\students::where('user_id', $user->id)->first();
+        if (!$student) {
+            return redirect()->route('dashboard')->with('error', 'Create a student profile first to get AI tips.');
+        }
+        $today = now()->toDateString();
+        // Delete today’s tips created by this user for this student
+        Tip::where('student_id', $student->id)
+            ->where('created_by', $user->id)
+            ->whereDate('created_at', $today)
+            ->delete();
+
+        // After deletion, run the same generation flow
+        return $this->generate();
     }
 
     public function create()

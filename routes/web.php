@@ -64,6 +64,7 @@ Route::middleware(['auth', \App\Http\Middleware\FirstLoginAssessment::class])->g
     // Reports
     Route::get('reports/health', [ReportController::class, 'health'])->name('reports.health');
     Route::get('reports/health.csv', [ReportController::class, 'healthCsv'])->name('reports.health.csv');
+    Route::get('reports/health.pdf', [ReportController::class, 'healthPdf'])->name('reports.health.pdf');
 
     // Admin API endpoints
     Route::get('admin/api/goals', [GoalsController::class, 'adminList'])->name('admin.api.goals');
@@ -97,6 +98,12 @@ Route::middleware(['auth'])->group(function(){
     Route::post('assessment/regenerate-insights', [AssessmentController::class, 'regenerateInsights'])->name('assessment.regenerate');
     // Apply AI suggestions (intake + goal)
     Route::post('ai/suggest/apply', [SuggestionsController::class, 'apply'])->name('ai.suggest.apply');
-    // Generate AI-powered tips
-    Route::post('ai/tips/generate', [TipsController::class, 'generate'])->name('ai.tips.generate');
+    // Generate AI-powered tips (rate limited to prevent spam)
+    Route::post('ai/tips/generate', [TipsController::class, 'generate'])
+        ->middleware('throttle:3,1')
+        ->name('ai.tips.generate');
+    // Replace today's tips (delete today's user-generated tips then regenerate)
+    Route::post('ai/tips/replace', [TipsController::class, 'replaceToday'])
+        ->middleware('throttle:3,1')
+        ->name('ai.tips.replace');
 });
