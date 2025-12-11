@@ -1057,7 +1057,7 @@
             <h2 style="margin-top:0;">Health Report</h2>
             <p class="text">Download a clean, server-generated PDF of your health report.</p>
             <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
-                <a class="btn-card" href="{{ route('reports.health.pdf') }}" target="_blank" rel="noopener">Download PDF</a>
+                <a class="btn-card" href="{{ route('reports.health.pdf') }}" target="_blank" rel="noopener" onclick="this.href = appendTz(this.href);">Download PDF</a>
             </div>
         </div>
     </div>
@@ -1078,6 +1078,17 @@
 
 
     <script>
+        // Ensure PDF downloads include the user's timezone so the server stamps local time
+        function appendTz(url) {
+            try {
+                var tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+                if (!tz) return url;
+                var u = new URL(url, window.location.origin);
+                u.searchParams.set('tz', tz);
+                u.searchParams.set('ts', Date.now());
+                return u.toString();
+            } catch (e) { return url; }
+        }
         // BMI helpers
         function getBMIStatus(bmi) {
             if (isNaN(bmi)) return '';

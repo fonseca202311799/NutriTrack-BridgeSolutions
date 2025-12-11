@@ -168,6 +168,10 @@ class ReportController extends Controller
         $student = students::where('user_id', $user->id)->first();
         abort_unless($student, 404);
 
+        $tz = $request->query('tz', config('app.timezone'));
+        try { \Carbon\CarbonTimeZone::create($tz); } catch (\Throwable $e) { $tz = config('app.timezone'); }
+        $generatedAt = \Carbon\Carbon::now($tz);
+
         $end = now()->endOfDay();
         $start = now()->copy()->subDays(29)->startOfDay();
 
@@ -223,6 +227,7 @@ class ReportController extends Controller
             'averages' => $averages,
             'latestRecord' => $latestRecord,
             'goalStats' => $goalStats,
+            'generatedAt' => $generatedAt,
         ];
         $html = view('reports.health-pdf', $viewData)->render();
         $dompdf = new Dompdf();
@@ -231,7 +236,9 @@ class ReportController extends Controller
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $filename = 'health_report_' . now()->format('Ymd_His') . '.pdf';
+        $rawName = $user->name ?? 'User';
+        $safeName = preg_replace('/[^A-Za-z0-9]+/', '', $rawName) ?: 'User';
+        $filename = 'Health Report_' . $safeName . '.pdf';
         return response($dompdf->output(), 200, [
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'attachment; filename="'.$filename.'"'

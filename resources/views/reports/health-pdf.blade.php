@@ -5,7 +5,7 @@
     <title>Health Report</title>
     <style>
         /* Footer at the very edge: reduce bottom margin */
-        @page { margin: 20mm 12mm 12mm 12mm; }
+        @page { margin: 16mm 12mm 12mm 12mm; }
         body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; color:#000; font-size:12px; }
         .header { display:flex; justify-content:space-between; align-items:center; }
         .brand { display:flex; align-items:center; gap:8px; }
@@ -14,11 +14,14 @@
         .rule { border-top:2px solid #000; margin-top:6px; }
         h1 { font-size:18px; margin:8px 0 2px 0; color:#000; }
         .dates { color:#000; font-weight:600; font-size:11px; }
-        .section { margin-top:8px; }
-        .card { border:1px solid #000; border-radius:4px; padding:8px; }
-        .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:5px; }
+        .section { margin-top:6px; }
+        .card { border:1px solid #000; border-radius:0; padding:6px; page-break-inside: avoid; }
+        .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:4px; }
         .table { width:100%; border-collapse:collapse; font-size:10px; }
         .table th, .table td { border:1px solid #000; padding:3px 5px; }
+        .table thead { display: table-header-group; }
+        .table tfoot { display: table-footer-group; }
+        .table tr { page-break-inside: avoid; }
         .table th { background:#eee; text-align:left; color:#000; }
         .num { text-align:right; }
         .pill { display:inline-block; background:#fff; color:#000; border:1px solid #000; border-radius:999px; padding:2px 6px; font-size:10px; }
@@ -46,7 +49,7 @@
     <div class="header">
         <div class="brand">
             @if($hasGd)
-                <img src="{{ public_path('images/nutritrack(2).png') }}" alt="NutriTrack" />
+                <img src="{{ asset('images/small_logo.png') }}" alt="NutriTrack" />
             @else
                 <svg viewBox="0 0 120 32" width="120" height="32" aria-label="NutriTrack" role="img">
                     <rect x="0" y="0" width="120" height="32" fill="#000" rx="4"/>
@@ -144,7 +147,7 @@
     </div>
 
     <div class="footer">
-        <span>Generated on {{ now()->format('M d, Y h:i A') }}</span>
+        <span>Generated on {{ isset($generatedAt) ? $generatedAt->format('M d, Y h:i A') : now()->format('M d, Y h:i A') }}</span>
         <span>NutriTrack</span>
     </div>
 </body>
