@@ -1050,16 +1050,14 @@
         </div>
     </div>
 
-    <!-- Health Report Modal -->
+    <!-- Health Report Modal (Download only) -->
     <div id="healthReportModal" class="modal" style="display:none;">
-        <div class="modal-content" style="max-width:1000px; width:95%; height:80vh; position:relative; display:flex; flex-direction:column;">
+        <div class="modal-content" style="max-width:600px; width:95%; position:relative;">
             <span class="close" onclick="closeModal('healthReportModal')">&times;</span>
-            <div style="flex:1 1 auto; min-height:0;">
-                <iframe id="healthReportFrame" src="{{ route('reports.health', ['embed' => 1, 'pdf' => 1]) }}" style="width:100%; height:100%; border:none; border-radius:8px; background:#fff;"></iframe>
-            </div>
-            <div style="margin-top:10px; display:flex; justify-content:flex-end; gap:8px;">
+            <h2 style="margin-top:0;">Health Report</h2>
+            <p class="text">Download a clean, server-generated PDF of your health report.</p>
+            <div style="margin-top:12px; display:flex; justify-content:flex-end; gap:8px;">
                 <a class="btn-card" href="{{ route('reports.health.pdf') }}" target="_blank" rel="noopener">Download PDF</a>
-                <button type="button" class="btn-card" onclick="printHealthReport()">Print PDF</button>
             </div>
         </div>
     </div>
@@ -1136,26 +1134,7 @@
             }
         }
 
-        function printHealthReport(){
-            try {
-                var frame = document.getElementById('healthReportFrame');
-                if (frame && frame.contentWindow) {
-                    frame.contentWindow.focus();
-                    frame.contentWindow.print();
-                    return;
-                }
-            } catch(e) { /* fall through */ }
-            // Fallback: open report in new window and trigger print
-            var url = "{{ route('reports.health', ['embed' => 1, 'pdf' => 1]) }}";
-            var w = window.open(url, '_blank');
-            if (w) {
-                var iv = setInterval(function(){
-                    try {
-                        if (w.document && w.document.readyState === 'complete') { w.focus(); w.print(); clearInterval(iv); }
-                    } catch(e) {}
-                }, 500);
-            }
-        }
+        // Removed browser print logic; server-side PDF download only
 
         const sections = ['dashboard','health','goals','tips','settings','profile','terms'];
         function showSection(name) {

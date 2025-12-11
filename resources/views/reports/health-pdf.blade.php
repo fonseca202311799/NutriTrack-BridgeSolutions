@@ -4,25 +4,41 @@
     <meta charset="utf-8">
     <title>Health Report</title>
     <style>
-        @page { margin: 22mm 15mm 18mm 15mm; }
-        body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; color:#0b1320; }
+        /* Footer at the very edge: reduce bottom margin */
+        @page { margin: 20mm 12mm 12mm 12mm; }
+        body { font-family: DejaVu Sans, Arial, Helvetica, sans-serif; color:#000; font-size:12px; }
         .header { display:flex; justify-content:space-between; align-items:center; }
         .brand { display:flex; align-items:center; gap:8px; }
-        .brand img { height:18px; }
-        .conf { letter-spacing:1.5px; font-size:11px; color:#111; opacity:.85; }
-        .rule { border-top:2px solid #0f5132; margin-top:6px; }
-        h1 { font-size:22px; margin:10px 0 2px 0; color:#0f5132; }
-        .dates { color:#0f5132; font-weight:600; font-size:12px; }
-        .section { margin-top:14px; }
-        .card { border:1px solid #e5e7eb; border-radius:6px; padding:10px; }
-        .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; }
-        .table { width:100%; border-collapse:collapse; font-size:12px; }
-        .table th, .table td { border:1px solid #e5e7eb; padding:6px 8px; }
-        .table th { background:#f1f5f9; text-align:left; }
+        .brand img { height:16px; }
+        .conf { letter-spacing:1.2px; font-size:10px; color:#000; opacity:1; }
+        .rule { border-top:2px solid #000; margin-top:6px; }
+        h1 { font-size:18px; margin:8px 0 2px 0; color:#000; }
+        .dates { color:#000; font-weight:600; font-size:11px; }
+        .section { margin-top:8px; }
+        .card { border:1px solid #000; border-radius:4px; padding:8px; }
+        .grid { display:grid; grid-template-columns: repeat(2, 1fr); gap:5px; }
+        .table { width:100%; border-collapse:collapse; font-size:10px; }
+        .table th, .table td { border:1px solid #000; padding:3px 5px; }
+        .table th { background:#eee; text-align:left; color:#000; }
         .num { text-align:right; }
-        .pill { display:inline-block; background:#e8f5e9; color:#0f5132; border:1px solid #cde7d3; border-radius:999px; padding:2px 8px; font-size:11px; }
-        .muted { color:#64748b; }
-        .mb-6 { margin-bottom:6px; }
+        .pill { display:inline-block; background:#fff; color:#000; border:1px solid #000; border-radius:999px; padding:2px 6px; font-size:10px; }
+        .muted { color:#333; }
+        .mb-6 { margin-bottom:4px; }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            font-size:10px;
+            color:#000;
+            display:flex;
+            justify-content:space-between;
+            line-height:1.4;
+            padding: 6px 12mm;
+            border-top: 1px solid #000;
+            background: #fff;
+            z-index: 999;
+        }
     </style>
 </head>
 <body>
@@ -33,7 +49,7 @@
                 <img src="{{ public_path('images/nutritrack(2).png') }}" alt="NutriTrack" />
             @else
                 <svg viewBox="0 0 120 32" width="120" height="32" aria-label="NutriTrack" role="img">
-                    <rect x="0" y="0" width="120" height="32" fill="#0f5132" rx="4"/>
+                    <rect x="0" y="0" width="120" height="32" fill="#000" rx="4"/>
                     <text x="60" y="21" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="14" fill="#ffffff">NutriTrack</text>
                 </svg>
             @endif
@@ -127,7 +143,7 @@
         </table>
     </div>
 
-    <div style="margin-top:12px; font-size:11px; color:#64748b; display:flex; justify-content:space-between;">
+    <div class="footer">
         <span>Generated on {{ now()->format('M d, Y h:i A') }}</span>
         <span>NutriTrack</span>
     </div>

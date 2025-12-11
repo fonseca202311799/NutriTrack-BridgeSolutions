@@ -17,9 +17,7 @@
             </div>
             @if(!request()->boolean('pdf'))
             <div class="report-actions">
-                <a class="btn-card" href="{{ route('reports.health.csv') }}" target="_blank">Download CSV</a>
                 <a class="btn-card" href="{{ route('reports.health.pdf') }}" target="_blank">Download PDF</a>
-                <button class="btn-card" onclick="window.print()">Print / Save as PDF</button>
             </div>
             @endif
         </div>
@@ -29,8 +27,8 @@
         <h3 style="margin-top:0;">Student</h3>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:10px;">
             <div><strong>Name:</strong> {{ auth()->user()->name }}</div>
-            <div><strong>Grade Level:</strong> {{ $student->grade_level ?? '' }}</div>
-            <div><strong>Age:</strong> {{ isset($student->age) ? intval($student->age) : '' }}</div>
+            <div><strong>Grade Level:</strong> {{ $student->grade_level ?? '—' }}</div>
+            <div><strong>Age:</strong> {{ isset($student->age) ? intval($student->age) : '—' }}</div>
         </div>
     </div>
 
