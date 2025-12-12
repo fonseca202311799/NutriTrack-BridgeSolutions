@@ -79,12 +79,16 @@
         }
 
         .page-number:after {
+<<<<<<< HEAD
             content: counter(page);
         }
 
         .page-number {
             position: absolute;
             right: 12mm;
+=======
+            content: counter(page) " of " counter(pages);
+>>>>>>> 382130004fcdbe7e16e8ec0fdab3598a276df54f
         }
 
         /* Content area - accounts for header and footer */
@@ -169,6 +173,7 @@
                 @endif
             </div>
             <div class="conf">CONFIDENTIAL</div>
+<<<<<<< HEAD
         </div>
         <div class="rule"></div>
     </div>
@@ -335,7 +340,177 @@
                     @endforeach
                 </tbody>
             </table>
+=======
+>>>>>>> 382130004fcdbe7e16e8ec0fdab3598a276df54f
+        </div>
+        <div class="rule"></div>
+    </div>
+<<<<<<< HEAD
+=======
+
+    <!-- Footer - Fixed on all pages -->
+    <div class="footer">
+        <span>Generated on {{ isset($generatedAt) ? $generatedAt->format('M d, Y h:i A') : now()->format('M d, Y h:i A') }}</span>
+        <span class="page-number"></span>
+        <span>NutriTrack</span>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content">
+        <h1>Health Report</h1>
+        <div class="dates">{{ $start->format('M d, Y') }} – {{ $end->format('M d, Y') }}</div>
+
+        <div class="section card">
+            <strong>Student</strong>
+            <table class="table" style="margin-top:6px;">
+                <thead>
+                    <tr>
+                        <th>Field</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Name</td>
+                        <td>{{ auth()->user()->name }}</td>
+                    </tr>
+                    <tr>
+                        <td>Grade Level</td>
+                        <td>{{ $student->grade_level ?? '—' }}</td>
+                    </tr>
+                    <tr>
+                        <td>Age</td>
+                        <td>{{ isset($student->age) ? intval($student->age) : '—' }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section card">
+            <strong>Latest Metrics</strong>
+            @if($latestRecord)
+                <table class="table" style="margin-top:6px;">
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>BMI</td>
+                            <td class="num"><strong>{{ $latestRecord->bmi ?? '—' }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Status</td>
+                            <td><strong>{{ $latestRecord->status ?? '—' }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td>Last Update</td>
+                            <td><strong>{{ optional($latestRecord->recorded_at)->format('M d, Y') }}</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            @else
+                <div class="muted">No health records yet.</div>
+            @endif
+        </div>
+
+        <div class="section card">
+            <strong>30-Day Summary</strong>
+            <table class="table" style="margin-top:6px;">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th class="num">Calories (kcal)</th>
+                        <th class="num">Protein (g)</th>
+                        <th class="num">Carbs (g)</th>
+                        <th class="num">Fat (g)</th>
+                        <th class="num">Water (ml)</th>
+                        <th class="num">Exercise (min)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Total</strong></td>
+                        <td class="num">{{ number_format($totals['calories']) }}</td>
+                        <td class="num">{{ number_format($totals['protein']) }}</td>
+                        <td class="num">{{ number_format($totals['carbs']) }}</td>
+                        <td class="num">{{ number_format($totals['fat']) }}</td>
+                        <td class="num">{{ number_format($totals['water_ml']) }}</td>
+                        <td class="num">{{ number_format($totals['exercise_min']) }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Average per day</strong></td>
+                        <td class="num">{{ number_format($averages['calories']) }}</td>
+                        <td class="num">{{ number_format($averages['protein']) }}</td>
+                        <td class="num">{{ number_format($averages['carbs']) }}</td>
+                        <td class="num">{{ number_format($averages['fat']) }}</td>
+                        <td class="num">{{ number_format($averages['water_ml']) }}</td>
+                        <td class="num">{{ number_format($averages['exercise_min']) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section card">
+            <strong>Goals</strong>
+            @php($percent = $goalStats['total'] ? round(($goalStats['completed'] / $goalStats['total']) * 100) : 0)
+            <table class="table" style="margin-top:6px;">
+                <thead>
+                    <tr>
+                        <th>Metric</th>
+                        <th class="num">Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total</td>
+                        <td class="num">{{ $goalStats['total'] }}</td>
+                    </tr>
+                    <tr>
+                        <td>Completed</td>
+                        <td class="num">{{ $goalStats['completed'] }}</td>
+                    </tr>
+                    <tr>
+                        <td>Completion Rate</td>
+                        <td class="num">{{ $percent }}%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section card" style="page-break-before: always; margin-top: 40mm;">
+            <strong>Daily Detail (Last 30 Days Report)</strong>
+            <table class="table" style="margin-top:6px;">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th class="num">Calories</th>
+                        <th class="num">Protein (g)</th>
+                        <th class="num">Carbs (g)</th>
+                        <th class="num">Fat (g)</th>
+                        <th class="num">Water (ml)</th>
+                        <th class="num">Exercise (min)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($daily as $row)
+                    <tr>
+                        <td>{{ \Carbon\Carbon::parse($row['date'])->format('M d, Y') }}</td>
+                        <td class="num">{{ number_format($row['calories']) }}</td>
+                        <td class="num">{{ number_format($row['protein']) }}</td>
+                        <td class="num">{{ number_format($row['carbs']) }}</td>
+                        <td class="num">{{ number_format($row['fat']) }}</td>
+                        <td class="num">{{ number_format($row['water_ml']) }}</td>
+                        <td class="num">{{ number_format($row['exercise_min']) }}</td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
     </div>
+>>>>>>> 382130004fcdbe7e16e8ec0fdab3598a276df54f
 </body>
 </html>
+
