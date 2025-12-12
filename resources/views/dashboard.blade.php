@@ -1067,7 +1067,7 @@
         <div class="modal-content" style="max-width:420px; width:95%; text-align:center;">
             <span class="close" onclick="closeModal('logoutConfirmModal')" aria-label="Close">&times;</span>
             <h2 style="margin-top:0;">Confirm Logout</h2>
-            <p class="text" style="margin:8px 0 0;">Are you sure you want to exit application?</p>
+            <p class="text" style="margin:8px 0 0;">Are you sure you want to exit application</p>
             <div style="margin-top:16px; display:flex; gap:10px; justify-content:center;">
                 <button type="button" class="btn-card" style="background:#AF0606;" onclick="document.getElementById('logoutForm').submit();">Logout</button>
                 <button type="button" class="btn-card" style="background:#6c757d;" onclick="closeModal('logoutConfirmModal')">Cancel</button>
