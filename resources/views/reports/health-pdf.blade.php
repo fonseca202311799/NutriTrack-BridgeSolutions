@@ -301,7 +301,7 @@
         </div>
 
         <div class="section card" style="page-break-before: always; margin-top: 40mm;">
-            <strong>Daily Detail (Last 30 Days)</strong>
+            <strong>Daily Detail (Last 30 Days Report)</strong>
             <table class="table" style="margin-top:6px;">
                 <thead>
                     <tr>
