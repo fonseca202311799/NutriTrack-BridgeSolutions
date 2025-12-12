@@ -79,7 +79,12 @@
         }
 
         .page-number:after {
-            content: counter(page) " of " counter(pages);
+            content: counter(page);
+        }
+
+        .page-number {
+            position: absolute;
+            right: 12mm;
         }
 
         /* Content area - accounts for header and footer */
@@ -170,9 +175,11 @@
 
     <!-- Footer - Fixed on all pages -->
     <div class="footer">
-        <span>Generated on {{ isset($generatedAt) ? $generatedAt->format('M d, Y h:i A') : now()->format('M d, Y h:i A') }}</span>
+        <div>
+            <span>Generated on {{ isset($generatedAt) ? $generatedAt->format('M d, Y h:i A') : now()->format('M d, Y h:i A') }}</span>
+            <span>NutriTrack</span>
+        </div>
         <span class="page-number"></span>
-        <span>NutriTrack</span>
     </div>
 
     <!-- Main Content -->
